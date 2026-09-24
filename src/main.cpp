@@ -18,6 +18,7 @@ Variables globales et defines
 */
 
 bool bumperArr;
+bool bumperAv;
 int vertpin = 48;
 int rougepin = 49;
 bool vert = false;
@@ -46,12 +47,12 @@ void arret(){
 };
 
 void avance(){
-  MOTOR_SetSpeed(RIGHT,vitesse);
+  MOTOR_SetSpeed(RIGHT,0.95*vitesse);
   MOTOR_SetSpeed(LEFT, vitesse);
 };
 
 void recule(){
-  MOTOR_SetSpeed(RIGHT, -0.5*vitesse);
+  MOTOR_SetSpeed(RIGHT, -0.95*vitesse);
   MOTOR_SetSpeed(LEFT, -vitesse);
 };
 
@@ -63,6 +64,14 @@ void tourneDroit(){
 void tourneGauche(){
   MOTOR_SetSpeed(RIGHT, -0.5*vitesse);
   MOTOR_SetSpeed(LEFT, 0.5*vitesse);
+};
+
+void tourne180(){
+  recule();
+  delay(500);
+  MOTOR_SetSpeed(RIGHT, vitesse);
+  MOTOR_SetSpeed(LEFT, -vitesse);
+  delay(800);
 };
 
 /*
@@ -101,11 +110,12 @@ void loop() {
   
   vert = digitalRead(vertpin);
   rouge = digitalRead(rougepin);
+  bumperAv = ROBUS_IsBumper(2);
   if (etat > 0){
     if (vert && rouge){ // aucun obstacle => avance
       etat = 1;
     }
-    if (!vert && !rouge){  // obstacle devant => recule
+    if (!vert && !rouge && !bumperAv){  // obstacle devant => recule
       etat = 2;
     }
     if (!vert && rouge){ // obstacle à gauche => tourne droit
@@ -113,6 +123,9 @@ void loop() {
       }
     if (vert && !rouge){ // obstacle à droite => tourne gauche
         etat = 4;
+    }
+    if (bumperAv){ // bumper avant => 360
+      etat = 5;
     }
   }
 
@@ -137,7 +150,10 @@ void loop() {
       break;
     case 4:
       tourneGauche();
-      break;            
+      break;    
+    case 5:
+      tourne180();
+      break;        
     default:
       avance();
       etat = 1;
