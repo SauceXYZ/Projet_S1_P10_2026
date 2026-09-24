@@ -10,13 +10,14 @@
             "includePath": [
                 "C:/Users/molle/Documents/Projet_S1_P10_2026/include",
                 "C:/Users/molle/Documents/Projet_S1_P10_2026/src",
+                "C:/Users/molle/Documents/Projet_S1_P10_2026/lib/LibRobUS-master/src",
+                "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                 "C:/Users/molle/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "C:/Users/molle/.platformio/packages/framework-arduino-avr/variants/mega",
                 "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
                 "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/HID/src",
-                "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
-                "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                 ""
             ],
             "browse": {
@@ -24,13 +25,14 @@
                 "path": [
                     "C:/Users/molle/Documents/Projet_S1_P10_2026/include",
                     "C:/Users/molle/Documents/Projet_S1_P10_2026/src",
+                    "C:/Users/molle/Documents/Projet_S1_P10_2026/lib/LibRobUS-master/src",
+                    "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                     "C:/Users/molle/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "C:/Users/molle/.platformio/packages/framework-arduino-avr/variants/mega",
                     "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
                     "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/HID/src",
-                    "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
-                    "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                    "C:/Users/molle/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                     ""
                 ]
             },
