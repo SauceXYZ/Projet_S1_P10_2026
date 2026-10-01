@@ -1,3 +1,13 @@
+//3200 pulse par tour
+//pulse directionnel
+//compteur ++ ou compteur --
+
+//int32_t ENCODER_Read(uint8_t id)
+//int32_t ENCODER_ReadReset(uint8_t id)
+
+//-0.15 a 0,15 nn fonctionnel
+//-1 a 1 (signe = direction)
+
 /*
 Projet: Le nom du script
 Equipe: Votre numero d'equipe
@@ -17,15 +27,18 @@ Variables globales et defines
  -> L'ensemble des fonctions y ont acces
 */
 
-bool bumperArr;
-bool bumperAv;
+bool bumperArr=false;
 int vertpin = 48;
 int rougepin = 49;
 bool vert = false;
 bool rouge = false;
 int etat = 0; // = 0 arrêt 1 = avance 2 = recule 3 = TourneDroit 4 = TourneGauche
 int etatPast = 0;
-float vitesse = 0.40;
+
+float vitesse = 0.50;
+int clicParTour = 3200;
+float diametreRoue = 7.62; // en cm
+
 
 /*
 Vos propres fonctions sont creees ici
@@ -46,33 +59,88 @@ void arret(){
   MOTOR_SetSpeed(LEFT, 0);
 };
 
-void avance(){
-  MOTOR_SetSpeed(RIGHT,0.95*vitesse);
-  MOTOR_SetSpeed(LEFT, vitesse);
+void avance(float vitessedroit, float vitessegauche){
+  MOTOR_SetSpeed(RIGHT,vitessedroit);
+  MOTOR_SetSpeed(LEFT, vitessegauche);
 };
 
-void recule(){
-  MOTOR_SetSpeed(RIGHT, -0.95*vitesse);
+void recule(float vitesse){
+  MOTOR_SetSpeed(RIGHT, -vitesse);
   MOTOR_SetSpeed(LEFT, -vitesse);
 };
 
-void tourneDroit(){
+void tourneDroit(float vitesse){
   MOTOR_SetSpeed(RIGHT, 0.5*vitesse);
   MOTOR_SetSpeed(LEFT, -0.5*vitesse);
 };
 
-void tourneGauche(){
+void tourneGauche(float vitesse){
   MOTOR_SetSpeed(RIGHT, -0.5*vitesse);
   MOTOR_SetSpeed(LEFT, 0.5*vitesse);
 };
 
-void tourne180(){
-  recule();
-  delay(500);
-  MOTOR_SetSpeed(RIGHT, vitesse);
-  MOTOR_SetSpeed(LEFT, -vitesse);
-  delay(800);
+int compteurTotaleDroit = 0;
+int compteurTotaleGauche = 0;
+const int PULSEATTENDUDROIT = 2300;
+const int PULSEATTENDUGAUCHE = 2300;
+float vitesseDroite = 0.50;
+float vitesseGauche = 0.59;
+
+void pid(){
+    float kGauche=0;  //Différence
+    float kDroite=0;  //Différence
+    float differenceK = 0;
+    float KP=0.0001; //Correction proportionnelle
+    
+    int compteurDroit = 0;
+    int compteurGauche = 0;
+    Serial.print("compteurDroit: ");
+    Serial.println(ENCODER_Read(RIGHT));
+    Serial.print("compteurGauche: ");
+    Serial.println(ENCODER_Read(LEFT));
+
+    compteurDroit = ENCODER_ReadReset(RIGHT);
+    
+    compteurGauche = ENCODER_ReadReset(LEFT);
+    compteurTotaleDroit += compteurDroit;
+    compteurTotaleGauche += compteurGauche;
+
+    differenceK = compteurDroit - compteurGauche;
+
+    if(differenceK > 100){
+       if(differenceK > 0){
+      vitesseGauche += differenceK*KP/2;
+      vitesseDroite -= differenceK*KP/2;
+    }
+    else if(differenceK < 0){
+      vitesseDroite += -differenceK*KP/2;
+      vitesseGauche -= -differenceK*KP/2;
+    }
+    }
+
+   
+
+    kDroite = PULSEATTENDUDROIT - compteurDroit;
+    vitesseDroite += kDroite*KP;
+
+
+    kGauche = PULSEATTENDUGAUCHE - compteurGauche;
+    vitesseGauche += kGauche*KP;
+
+    Serial.print("vitesseDroite: ");
+    Serial.println(vitesseDroite);
+    Serial.print("vitesseGauche: ");
+    Serial.println(vitesseGauche);
+    
+
+    avance(vitesseDroite, vitesseGauche);
+
+    
 };
+
+
+
+
 
 /*
 Fonctions d'initialisation (setup)
@@ -95,70 +163,27 @@ Fonctions de boucle infini
  -> Se fait appeler perpetuellement suite au "setup"
 */
 void loop() {
-  etatPast = etat;
   bumperArr = ROBUS_IsBumper(3);
+  
   if (bumperArr){
-    if (etat == 0){
-      beep(2);
+    
+    if(etat == 0){
       etat = 1;
-    } 
-    else{
-      beep(1);
-      etat = 0;
     }
+    else {
+        Serial.print("bumperArr: ");
+        Serial.println(bumperArr);
+        etat = 0;
+    }
+  } 
+  if(etat == 1){
+    delay(200);
+    pid();
+  } else if(etat == 0){
+    arret();
+    delay(500);
   }
   
-  vert = digitalRead(vertpin);
-  rouge = digitalRead(rougepin);
-  bumperAv = ROBUS_IsBumper(2);
-  if (etat > 0){
-    if (vert && rouge){ // aucun obstacle => avance
-      etat = 1;
-    }
-    if (!vert && !rouge && !bumperAv){  // obstacle devant => recule
-      etat = 2;
-    }
-    if (!vert && rouge){ // obstacle à gauche => tourne droit
-        etat = 3;
-      }
-    if (vert && !rouge){ // obstacle à droite => tourne gauche
-        etat = 4;
-    }
-    if (bumperAv){ // bumper avant => 360
-      etat = 5;
-    }
-  }
-
-  if (etatPast != etat){
-    arret();
-    delay(50);
-  }
-  else{
-    switch (etat)
-    {
-    case 0:
-      arret();
-      break;
-    case 1:
-      avance();
-      break;
-    case 2:
-      recule();
-      break;
-    case 3:
-      tourneDroit();
-      break;
-    case 4:
-      tourneGauche();
-      break;    
-    case 5:
-      tourne180();
-      break;        
-    default:
-      avance();
-      etat = 1;
-    break;
-    }
-  }
-  delay(200);
 }
+
+
