@@ -28,6 +28,7 @@ Variables globales et defines
 */
 
 bool bumperArr=false;
+bool bumperAv=false;
 int vertpin = 48;
 int rougepin = 49;
 bool vert = false;
@@ -74,10 +75,6 @@ void tourneDroit(float vitesse){
   MOTOR_SetSpeed(LEFT, -0.5*vitesse);
 };
 
-void tourneGauche(float vitesse){
-  MOTOR_SetSpeed(RIGHT, -0.5*vitesse);
-  MOTOR_SetSpeed(LEFT, 0.5*vitesse);
-};
 
 int compteurTotaleDroit = 0;
 int compteurTotaleGauche = 0;
@@ -138,6 +135,20 @@ void pid(){
     
 };
 
+void tourneGauche(){
+  MOTOR_SetSpeed(RIGHT, -0.5*vitesse);
+  MOTOR_SetSpeed(LEFT, 0.5*vitesse);
+  delay(820);
+  arret();
+}
+
+void tournerDroit(){
+  MOTOR_SetSpeed(RIGHT, 0.5*vitesse);
+  MOTOR_SetSpeed(LEFT, -0.5*vitesse);
+  delay(820);
+  arret();
+}
+
 
 
 
@@ -164,25 +175,30 @@ Fonctions de boucle infini
 */
 void loop() {
   bumperArr = ROBUS_IsBumper(3);
+  bumperAv = ROBUS_IsBumper(2);
+
+  if (bumperAv){
+    tournerDroit();
+  }
   
   if (bumperArr){
-    
-    if(etat == 0){
+    tourneGauche();
+    /*if(etat == 0){
       etat = 1;
     }
     else {
         Serial.print("bumperArr: ");
         Serial.println(bumperArr);
         etat = 0;
-    }
+    }*/
   } 
-  if(etat == 1){
+  /*if(etat == 1){
     delay(200);
     pid();
   } else if(etat == 0){
     arret();
     delay(500);
-  }
+  }*/
   
 }
 
