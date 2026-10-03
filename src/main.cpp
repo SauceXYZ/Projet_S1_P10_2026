@@ -113,16 +113,17 @@ void pid(){
       vitesseDroite += -differenceK*KP/2;
       vitesseGauche -= -differenceK*KP/2;
     }
+    } else {
+      kDroite = PULSEATTENDUDROIT - compteurDroit;
+      vitesseDroite += kDroite*KP;
+
+      kGauche = PULSEATTENDUGAUCHE - compteurGauche;
+      vitesseGauche += kGauche*KP;
     }
 
    
 
-    kDroite = PULSEATTENDUDROIT - compteurDroit;
-    vitesseDroite += kDroite*KP;
-
-
-    kGauche = PULSEATTENDUGAUCHE - compteurGauche;
-    vitesseGauche += kGauche*KP;
+    
 
     Serial.print("vitesseDroite: ");
     Serial.println(vitesseDroite);
