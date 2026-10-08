@@ -40,6 +40,7 @@ void progresser(int x, int y, int sens){
     if(map[x][y] & 1 == 0){
         // gauche
         possibilite[3] = 1;
+        
     }
 
     int vert = 0; //digitalRead(vertpin);
