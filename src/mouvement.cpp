@@ -29,50 +29,52 @@ int avance(void)
     {
         if (lab_posy < y_total && lab_posx < x_total_max && lab_posx > x_total_min)
         {
-            MOTOR_SetSpeed(0,0.48);
-            MOTOR_SetSpeed(1,0.5);
-            if(distance_enc_cm >= 1)
+            MOTOR_SetSpeed(0, 0.48);
+            MOTOR_SetSpeed(1, 0.5);
+            if (distance_enc_cm >= 1)
             {
-                if(direction == FACE_AVANT)
+                if (direction == FACE_AVANT)
                 {
-                    lab_posy=lab_posy + distance_enc_cm;
+                    lab_posy = lab_posy + distance_enc_cm;
                 }
-                else if(direction == FACE_ARRIERE)
+                else if (direction == FACE_ARRIERE)
                 {
-                    lab_posy=lab_posy - distance_enc_cm;
+                    lab_posy = lab_posy - distance_enc_cm;
                 }
                 else if (direction == FACE_DROIT)
                 {
-                    lab_posx=lab_posx + distance_enc_cm;
+                    lab_posx = lab_posx + distance_enc_cm;
                 }
                 else if (direction == FACE_GAUCHE)
                 {
-                    lab_posx=lab_posx - distance_enc_cm;
+                    lab_posx = lab_posx - distance_enc_cm;
                 }
                 ENCODER_Reset(1);
                 ENCODER_Reset(0);
             }
+            return 0;
         }
         else
         {
-            // Serial.print("lab_posy: ");
-            // Serial.print(lab_posy, DEC);
-            // Serial.print(" distance_enc_cm: ");
-            // Serial.print(distance_enc_cm, DEC);
-            // Serial.print("\r");
-            MOTOR_SetSpeed(0,0);
-            MOTOR_SetSpeed(1,0);
+            if (direction == FACE_GAUCHE && lab_posx == x_total_min)
+            {
+                tourner_droite();
+            }
+            if (direction == FACE_DROIT && lab_posx == x_total_max)
+            {
+                tourner_gauche();
+            }
+            if (direction == FACE_AVANT && lab_posy == y_total)
+            {
+                tourner_gauche();
+                tourner_gauche();
+            }
+            return 1;
         }
     }
-    else
-    {
-        MOTOR_SetSpeed(0,0);
-        MOTOR_SetSpeed(1,0);
-        return 1;
-     
-    }
-return 0;
-} 
+
+    return 0;
+}
 
 void tourner_gauche(void)
 {
