@@ -12,6 +12,7 @@ Inclure les librairies de functions que vous voulez utiliser
 #include <LibRobus.h>
 #include "mouvement.h"
 #include "main.h"
+#include "sifflet.cpp"
 
 /*
 Variables globales et defines
@@ -47,6 +48,7 @@ void setup(){
   ENCODER_Reset(1);
   ENCODER_Reset(0);
   Serial.println("Initialisation complete\n");
+  attendSifflet();
   delay(100);
   
 }
@@ -56,7 +58,10 @@ Fonctions de boucle infini
  -> Se fait appeler perpetuellement suite au "setup"
 */
 void loop() {
-  if(avance() == 1) {
-    scan();
+  if (debut_lock == 1) {
+    if(avance() == 1) {
+      scan();
+      Serial.println("Scan complete");
+    }
   }
 }
