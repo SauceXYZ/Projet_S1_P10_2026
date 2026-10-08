@@ -2,8 +2,6 @@
 #define MOUVEMENT_H
 
 
-#define TOURNE_DROIT 0
-#define TOURNE_GAUCHE 1
 
 int avance(void);
 int testavance(int distance);
