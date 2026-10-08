@@ -29,57 +29,83 @@ int avance(void)
     {
         if (lab_posy < y_total && lab_posx < x_total_max && lab_posx > x_total_min)
         {
-            MOTOR_SetSpeed(0, 0.48);
-            MOTOR_SetSpeed(1, 0.5);
-            if (distance_enc_cm >= 1)
+            MOTOR_SetSpeed(0,0.45);
+            MOTOR_SetSpeed(1,0.5);
+            if(distance_enc_cm >= 1)
             {
-                if (direction == FACE_AVANT)
+                if(direction == FACE_AVANT)
                 {
-                    lab_posy = lab_posy + distance_enc_cm;
+                    lab_posy=lab_posy + distance_enc_cm;
                 }
-                else if (direction == FACE_ARRIERE)
+                else if(direction == FACE_ARRIERE)
                 {
-                    lab_posy = lab_posy - distance_enc_cm;
+                    lab_posy=lab_posy - distance_enc_cm;
                 }
                 else if (direction == FACE_DROIT)
                 {
-                    lab_posx = lab_posx + distance_enc_cm;
+                    lab_posx=lab_posx + distance_enc_cm;
                 }
                 else if (direction == FACE_GAUCHE)
                 {
-                    lab_posx = lab_posx - distance_enc_cm;
+                    lab_posx=lab_posx - distance_enc_cm;
                 }
                 ENCODER_Reset(1);
                 ENCODER_Reset(0);
             }
-            return 0;
+
         }
         else
         {
-            if (direction == FACE_GAUCHE && lab_posx == x_total_min)
+            if (FACE_GAUCHE == direction && lab_posx <= x_total_max)
+            
             {
+                if (lab_posx < x_total_min)
+                {
+                    lab_posx = x_total_min+0.1;
+                }
+
                 tourner_droite();
+                return 0;
             }
-            if (direction == FACE_DROIT && lab_posx == x_total_max)
+            
+            else if (FACE_DROIT == direction && lab_posx >= x_total_max)
             {
+                if (lab_posx > x_total_max)
+                {
+                    lab_posx = x_total_max-0.1;
+                }
+
                 tourner_gauche();
+                return 0;
             }
-            if (direction == FACE_AVANT && lab_posy == y_total)
+            else if (FACE_AVANT == direction && lab_posy >= y_total)
             {
+                if (lab_posy > y_total)
+                {
+                    lab_posy = y_total-0.1;
+                }
+                
                 tourner_gauche();
                 tourner_gauche();
+                return 0;
             }
-            return 1;
+           
         }
     }
-
-    return 0;
-}
+    else
+    {
+        MOTOR_SetSpeed(0,0);
+        MOTOR_SetSpeed(1,0);
+        return 1;
+     
+    }
+return 0;
+} 
 
 void tourner_gauche(void)
 {
-    MOTOR_SetSpeed(0,-0.2);
-    MOTOR_SetSpeed(1,0.2);
+    MOTOR_SetSpeed(0,-0.5);
+    MOTOR_SetSpeed(1,0.5);
     delay(390);
     MOTOR_SetSpeed(0,0);
     MOTOR_SetSpeed(1,0);
@@ -99,6 +125,8 @@ void tourner_gauche(void)
     {
         direction = FACE_DROIT;
     }
+    ENCODER_Reset(1);
+    ENCODER_Reset(0);
     return;
 }
 
@@ -125,6 +153,8 @@ void tourner_droite(void)
     {
         direction = FACE_AVANT;
     }
+    ENCODER_Reset(1);
+    ENCODER_Reset(0);
     return;
 }
 

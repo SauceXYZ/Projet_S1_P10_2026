@@ -47,15 +47,18 @@ void setup(){
   ENCODER_Reset(0);
   Serial.println("Initialisation complete\n");
   delay(100);
-  
 }
 
 /*
 Fonctions de boucle infini
  -> Se fait appeler perpetuellement suite au "setup"
 */
-void loop() {
-  if(avance() == 1) {
-    scan();
-  }
+void loop()
+{
+  avance();
+if (avance() == 1)
+{ 
+  scan(); 
+}
+
 }
