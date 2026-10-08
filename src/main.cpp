@@ -120,11 +120,6 @@ void pid(){
       kGauche = PULSEATTENDUGAUCHE - compteurGauche;
       vitesseGauche += kGauche*KP;
     }
-
-   
-
-    
-
     Serial.print("vitesseDroite: ");
     Serial.println(vitesseDroite);
     Serial.print("vitesseGauche: ");
