@@ -1,0 +1,33 @@
+#include "stdio.h"
+#include "LibRobus.h"
+
+void tourner_roue(float angle, int direction){
+    //angle de rotation en degres 
+    // 0 == droite, 1 == gauche 
+    ENCODER_ReadReset(RIGHT);
+    ENCODER_ReadReset(LEFT);
+    float pi = 3.14159;
+    float taille_roue = 23.94;
+    float diametre_roues = 0;
+    float circonference = pi*diametre_roues;
+    float vitesse_rotation = 0.3;
+    float nbr_pulses = 3200*((angle * circonference)/(360*taille_roue))
+    if( direction == 0){
+        MOTOR_SetSpeed(RIGHT, vitesse_rotation);
+        MOTOR_SetSpeed(LEFT, -vitesse_rotation);
+        
+     else{MOTOR_SetSpeed(RIGHT, -vitesse_rotation);
+        MOTOR_SetSpeed(LEFT, vitesse_rotation);}
+
+    while(abs(ENCODER_Read(LEFT) <= nbr_pulses)){
+        delay(10);}
+    }
+    MOTOR_SetSpeed(RIGHT, 0);
+    MOTOR_SetSpeed(LEFT, 0);
+    delay(200);
+}
+        
+
+
+
+
