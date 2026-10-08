@@ -136,16 +136,24 @@ void tournerDroit(){
   arret();
 }
 
-void avancerDistance(int distance){
-    ENCODER_ReadReset(RIGHT);
+void avancerDistance(float distance){
+    float pi = 3.14159;
+    
+    // On utilise "long" pour les pulses car ce sont de grands nombres entiers
+    float pulses_depart = ENCODER_Read(RIGHT);
+    float pulses_requis = pulses_depart + ((distance * clicParTour) / (pi * diametreRoue));
+    float pulses_actuels = pulses_depart;
 
-    while(ENCODER_Read(RIGHT) < 5092.95){
-        MOTOR_SetSpeed(RIGHT, 0.5);//MOTOR_SetSpeed(RIGHT, vitesse);
-        MOTOR_SetSpeed(LEFT, 0.59);
+    while(pulses_actuels < pulses_requis){
+        // On ÉCRASE la valeur par la nouvelle lecture (pas de +=)
+        pulses_actuels = ENCODER_Read(RIGHT); 
+        
+        avancerDroitPID();
+        delay(50);
     }
+    
     arret();
 }
-
 
 
 
