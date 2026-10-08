@@ -21,6 +21,7 @@ Variables globales et defines
 
 int vertpin = 48;
 int rougepin = 49;
+int pinsifflet = 47;
 
 float lab_posx = 0;
 float lab_posy = 0;
