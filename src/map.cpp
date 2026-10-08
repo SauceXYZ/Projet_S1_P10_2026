@@ -10,7 +10,7 @@
 
 // 1001 = 9 
 //
-
+/*
 int map[3][6] = {
     {9, 1, 1, 1, 1, 3},
     {8, 0, 0, 0, 0, 2},
@@ -52,13 +52,6 @@ void progresser(int x, int y, int sens){
     
 }
 
-void avancer50cm(){
-    //5092,95 ticks pour 50cm
-    ENCODER_ReadReset(RIGHT);
-    while(ENCODER_Read(RIGHT) < 5092.95){
-        MOTOR_SetSpeed(RIGHT, 0.5);//MOTOR_SetSpeed(RIGHT, vitesse);
-        MOTOR_SetSpeed(LEFT, 0.5);
-    }
-}
 
+*/
 

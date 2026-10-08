@@ -40,6 +40,9 @@ float vitesse = 0.50;
 int clicParTour = 3200;
 float diametreRoue = 7.62; // en cm
 
+int x = 0;
+int y = 0;
+
 
 /*
 Vos propres fonctions sont creees ici
@@ -145,6 +148,16 @@ void tournerDroit(){
   arret();
 }
 
+void avancerDistance(int distance){
+    ENCODER_ReadReset(RIGHT);
+
+    while(ENCODER_Read(RIGHT) < 5092.95){
+        MOTOR_SetSpeed(RIGHT, 0.5);//MOTOR_SetSpeed(RIGHT, vitesse);
+        MOTOR_SetSpeed(LEFT, 0.59);
+    }
+    arret();
+}
+
 
 
 
@@ -178,7 +191,7 @@ void loop() {
   }
   
   if (bumperArr){
-    tourneGauche();
+    avancerDistance(50);
     /*if(etat == 0){
       etat = 1;
     }
@@ -197,5 +210,9 @@ void loop() {
   }*/
   
 }
+
+
+
+
 
 
