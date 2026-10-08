@@ -10,10 +10,10 @@
 
 /*
 Projet: Le nom du script
-Equipe: Votre numero d'equipe
-Auteurs: Les membres auteurs du script
-Description: Breve description du script
-Date: Derniere date de modification
+Equipe: Equipe P10
+Auteurs: Philippe, Nehla, Adam, Etienne
+Description: Script d'execution du parcours pour le robot
+Date: 08/10/2026
 */
 
 /*
@@ -26,7 +26,6 @@ Variables globales et defines
  -> defines...
  -> L'ensemble des fonctions y ont acces
 */
-
 bool bumperArr=false;
 bool bumperAv=false;
 int vertpin = 48;
@@ -35,11 +34,16 @@ bool vert = false;
 bool rouge = false;
 int etat = 0; // = 0 arrêt 1 = avance 2 = recule 3 = TourneDroit 4 = TourneGauche
 int etatPast = 0;
-
 float vitesse = 0.50;
 int clicParTour = 3200;
 float diametreRoue = 7.62; // en cm
 
+int compteurTotaleDroit = 0;
+int compteurTotaleGauche = 0;
+const int PULSEATTENDUDROIT = 2300;
+const int PULSEATTENDUGAUCHE = 2300;
+float vitesseDroite = 0.50;
+float vitesseGauche = 0.59;
 
 /*
 Vos propres fonctions sont creees ici
@@ -65,23 +69,10 @@ void avance(float vitessedroit, float vitessegauche){
   MOTOR_SetSpeed(LEFT, vitessegauche);
 };
 
-void recule(float vitesse){
-  MOTOR_SetSpeed(RIGHT, -vitesse);
-  MOTOR_SetSpeed(LEFT, -vitesse);
+void recule(float vitessedroit, float vitessegauche){
+  MOTOR_SetSpeed(RIGHT, -vitessedroit);
+  MOTOR_SetSpeed(LEFT, -vitessegauche);
 };
-
-void tourneDroit(float vitesse){
-  MOTOR_SetSpeed(RIGHT, 0.5*vitesse);
-  MOTOR_SetSpeed(LEFT, -0.5*vitesse);
-};
-
-
-int compteurTotaleDroit = 0;
-int compteurTotaleGauche = 0;
-const int PULSEATTENDUDROIT = 2300;
-const int PULSEATTENDUGAUCHE = 2300;
-float vitesseDroite = 0.50;
-float vitesseGauche = 0.59;
 
 void pid(){
     float kGauche=0;  //Différence
@@ -97,7 +88,6 @@ void pid(){
     Serial.println(ENCODER_Read(LEFT));
 
     compteurDroit = ENCODER_ReadReset(RIGHT);
-    
     compteurGauche = ENCODER_ReadReset(LEFT);
     compteurTotaleDroit += compteurDroit;
     compteurTotaleGauche += compteurGauche;
@@ -120,20 +110,12 @@ void pid(){
       kGauche = PULSEATTENDUGAUCHE - compteurGauche;
       vitesseGauche += kGauche*KP;
     }
-
-   
-
-    
-
     Serial.print("vitesseDroite: ");
     Serial.println(vitesseDroite);
     Serial.print("vitesseGauche: ");
     Serial.println(vitesseGauche);
     
-
     avance(vitesseDroite, vitesseGauche);
-
-    
 };
 
 void tourneGauche(){
@@ -149,10 +131,6 @@ void tournerDroit(){
   delay(820);
   arret();
 }
-
-
-
-
 
 /*
 Fonctions d'initialisation (setup)
