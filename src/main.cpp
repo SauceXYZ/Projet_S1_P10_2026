@@ -56,12 +56,11 @@ void setup(){
 Fonctions de boucle infini
  -> Se fait appeler perpetuellement suite au "setup"
 */
-void loop()
-{
-  avance();
-if (avance() == 1)
-{ 
-  scan(); 
-}
-
+void loop() {
+  if (debut_lock == 1) {
+    if(avance() == 1) {
+      scan();
+      Serial.println("Scan complete");
+    }
+  }
 }
