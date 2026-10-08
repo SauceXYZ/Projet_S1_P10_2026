@@ -40,6 +40,7 @@ float diametreRoue = 7.62; // en cm
 
 int x = 0;
 int y = 0;
+char direction = 'N'; // N = Nord, E = Est, S = Sud, O = Ouest
 
 int compteurTotaleDroit = 0;
 int compteurTotaleGauche = 0;
