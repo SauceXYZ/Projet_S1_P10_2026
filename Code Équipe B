@@ -1,0 +1,144 @@
+/*
+Projet: Le nom du script
+Equipe: Equipe P10
+Auteurs: Philippe, Nehla, Adam, Etienne
+Description: Script d'execution du parcours pour le robot
+Date: 08/10/2026
+*/
+
+#include <LibRobus.h>
+
+/* --- Variables globales --- */
+bool bumperArr=false;
+bool bumperAv=false;
+int vertpin = 48;
+int rougepin = 49;
+bool vert = false;
+bool rouge = false;
+
+// Variables pour le mouvement
+float vitesseBase = 0.50; // Vitesse de croisière du robot
+int clicParTour = 3200;
+float diametreRoue = 7.62; // en cm
+
+
+/* --- Fonctions utilitaires --- */
+
+void beep(int count){
+  for(int i=0;i<count;i++){
+    AX_BuzzerON();
+    delay(100);
+    AX_BuzzerOFF();
+    delay(100);  
+  }
+  delay(400);
+}
+
+void arret(){
+  MOTOR_SetSpeed(RIGHT, 0);
+  MOTOR_SetSpeed(LEFT, 0);
+}
+
+void avance(float vitessedroit, float vitessegauche){
+  MOTOR_SetSpeed(RIGHT, vitessedroit);
+  MOTOR_SetSpeed(LEFT, vitessegauche);
+}
+
+void recule(float vitessedroit, float vitessegauche){
+  MOTOR_SetSpeed(RIGHT, -vitessedroit);
+  MOTOR_SetSpeed(LEFT, -vitessegauche);
+}
+
+void tourneGauche(){
+  // Vitesse fixe pour les virages
+  MOTOR_SetSpeed(RIGHT, 0.5 * vitesseBase);
+  MOTOR_SetSpeed(LEFT, -0.5 * vitesseBase);
+  delay(820);
+  arret();
+}
+
+void tournerDroit(){
+  // Vitesse fixe pour les virages
+  MOTOR_SetSpeed(RIGHT, -0.5 * vitesseBase);
+  MOTOR_SetSpeed(LEFT, 0.5 * vitesseBase);
+  delay(820);
+  arret();
+}
+
+
+/* --- Fonctions de contrôle (PID et Mouvement) --- */
+
+void avancerDroitPID(){
+    float KP = 0.0002; // Constante proportionnelle (à ajuster si le robot zigzague)
+    
+    // On lit les encodeurs SANS faire de reset
+    long compteurDroit = ENCODER_Read(RIGHT);
+    long compteurGauche = ENCODER_Read(LEFT);
+    
+    // Calcul de l'erreur
+    long erreur = compteurDroit - compteurGauche;
+
+    // Calcul de la correction
+    float correction = erreur * KP;
+
+    // Application de la correction
+    float commandeDroite = vitesseBase - correction;
+    float commandeGauche = vitesseBase + correction;
+
+    // Sécurité : On garde les vitesses entre 0.0 et 1.0
+    if(commandeDroite > 1.0) commandeDroite = 1.0;
+    if(commandeDroite < 0.0) commandeDroite = 0.0;
+    
+    if(commandeGauche > 1.0) commandeGauche = 1.0;
+    if(commandeGauche < 0.0) commandeGauche = 0.0;
+
+    avance(commandeDroite, commandeGauche);
+}
+
+void avancerDistance(float distance){
+    float pi = 3.14159;
+    
+    // 1. On RESET les encodeurs UNE SEULE FOIS au début de la ligne droite
+    // Cela efface les différences accumulées lors des virages précédents
+    ENCODER_ReadReset(RIGHT);
+    ENCODER_ReadReset(LEFT);
+    
+    // 2. On calcule la cible à atteindre
+    long pulses_requis = (distance * clicParTour) / (pi * diametreRoue);
+
+    // 3. Boucle de mouvement : tant que la roue droite n'a pas atteint la cible
+    while(ENCODER_Read(RIGHT) < pulses_requis){
+        avancerDroitPID(); // Le PID garde le robot droit pendant le trajet
+        delay(50);         // On laisse le temps au processeur et aux moteurs
+    }
+    
+    // 4. Cible atteinte, on arrête les moteurs
+    arret();
+}
+
+
+/* --- Setup et Loop --- */
+
+void setup(){
+  BoardInit();
+  
+  pinMode(vertpin, INPUT);
+  pinMode(rougepin, INPUT);
+  delay(100);
+  beep(3);
+}
+
+void loop() {
+  bumperArr = ROBUS_IsBumper(3);
+  bumperAv = ROBUS_IsBumper(2);
+
+  // Appuyer sur le bumper avant fait tourner le robot
+  if (bumperAv){
+    tournerDroit();
+  }
+  
+  // Appuyer sur le bumper arrière fait avancer de 50 cm en ligne droite
+  if (bumperArr){
+    avancerDistance(50);
+  } 
+}

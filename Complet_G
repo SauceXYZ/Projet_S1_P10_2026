@@ -1,0 +1,157 @@
+/*
+Projet: Le nom du script
+Equipe: Equipe P10
+Auteurs: Philippe, Nehla, Adam, Etienne
+Description: Script d'execution du parcours pour le robot (Version Optimisée)
+Date: 08/10/2026
+*/
+
+#include <LibRobus.h>
+
+/* --- Constantes physiques et matérielles --- */
+const float VITESSE_BASE = 0.50; 
+const int CLICS_PAR_TOUR = 3200;
+const float DIAMETRE_ROUE = 7.62; // en cm
+const float EMPATTEMENT = 18.5; // Distance entre les deux roues en cm (À MESURER ET AJUSTER SUR VOTRE ROBOT)
+const float PI_VAL = 3.14159;
+
+/* --- Variables globales --- */
+bool bumperArr = false;
+bool bumperAv = false;
+
+// Pins préparées (pour capteurs de ligne ou LEDs par exemple)
+const int vertpin = 48;
+const int rougepin = 49;
+bool vert = false;
+bool rouge = false;
+
+/* --- Fonctions utilitaires --- */
+
+void beep(int count){
+  for(int i = 0; i < count; i++){
+    AX_BuzzerON();
+    delay(100);
+    AX_BuzzerOFF();
+    delay(100);  
+  }
+  delay(400);
+}
+
+void arret(){
+  MOTOR_SetSpeed(RIGHT, 0);
+  MOTOR_SetSpeed(LEFT, 0);
+}
+
+void avance(float vitessedroit, float vitessegauche){
+  MOTOR_SetSpeed(RIGHT, vitessedroit);
+  MOTOR_SetSpeed(LEFT, vitessegauche);
+}
+
+void recule(float vitessedroit, float vitessegauche){
+  MOTOR_SetSpeed(RIGHT, -vitessedroit);
+  MOTOR_SetSpeed(LEFT, -vitessegauche);
+}
+
+
+/* --- Fonctions de Mouvement (PID et Encodeurs) --- */
+
+void avancerDroitPID(){
+    float KP = 0.0002; // Constante proportionnelle
+    
+    long compteurDroit = ENCODER_Read(RIGHT);
+    long compteurGauche = ENCODER_Read(LEFT);
+    
+    long erreur = compteurDroit - compteurGauche;
+    float correction = erreur * KP;
+
+    float commandeDroite = VITESSE_BASE - correction;
+    float commandeGauche = VITESSE_BASE + correction;
+
+    // Bornage de sécurité
+    if(commandeDroite > 1.0) commandeDroite = 1.0;
+    if(commandeDroite < 0.0) commandeDroite = 0.0;
+    if(commandeGauche > 1.0) commandeGauche = 1.0;
+    if(commandeGauche < 0.0) commandeGauche = 0.0;
+
+    avance(commandeDroite, commandeGauche);
+}
+
+// Fonction de virage précise utilisant les encodeurs (angle en degrés)
+void tournerAngle(float angleEnDegres){
+    // Calcul de la distance que chaque roue doit parcourir sur l'arc de cercle
+    float distanceRoue = (EMPATTEMENT * PI_VAL * abs(angleEnDegres)) / 360.0;
+    long pulses_requis = (distanceRoue * CLICS_PAR_TOUR) / (PI_VAL * DIAMETRE_ROUE);
+
+    ENCODER_ReadReset(RIGHT);
+    ENCODER_ReadReset(LEFT);
+
+    // Détermination du sens de rotation (positif = droite, négatif = gauche)
+    if (angleEnDegres > 0) { 
+        MOTOR_SetSpeed(RIGHT, -0.5 * VITESSE_BASE);
+        MOTOR_SetSpeed(LEFT, 0.5 * VITESSE_BASE);
+    } else { 
+        MOTOR_SetSpeed(RIGHT, 0.5 * VITESSE_BASE);
+        MOTOR_SetSpeed(LEFT, -0.5 * VITESSE_BASE);
+    }
+
+    // On attend que les roues aient parcouru la distance requise
+    while(abs(ENCODER_Read(LEFT)) < pulses_requis && abs(ENCODER_Read(RIGHT)) < pulses_requis){
+        delay(10); // Petit délai pour ne pas surcharger le processeur
+    }
+    
+    arret();
+}
+
+// Retourne 'true' si la distance est atteinte, 'false' si un obstacle a été percuté
+bool avancerDistance(float distance){
+    ENCODER_ReadReset(RIGHT);
+    ENCODER_ReadReset(LEFT);
+    
+    long pulses_requis = (distance * CLICS_PAR_TOUR) / (PI_VAL * DIAMETRE_ROUE);
+
+    while(ENCODER_Read(RIGHT) < pulses_requis){
+        
+        // SÉCURITÉ : Lecture des bumpers en temps réel
+        if(ROBUS_IsBumper(2) || ROBUS_IsBumper(3)){
+            arret();
+            beep(1); // Signal sonore d'impact
+            return false; // Interruption du mouvement
+        }
+
+        avancerDroitPID(); 
+        delay(50);
+    }
+    
+    arret();
+    return true; // Trajet complété sans collision
+}
+
+
+/* --- Setup et Loop --- */
+
+void setup(){
+  BoardInit();
+  
+  pinMode(vertpin, INPUT);
+  pinMode(rougepin, INPUT);
+  
+  delay(100);
+  beep(3); // Indique que le robot est prêt
+}
+
+void loop() {
+  bumperArr = ROBUS_IsBumper(3);
+  bumperAv = ROBUS_IsBumper(2);
+
+  // Appuyer sur le bumper avant fait tourner de 90 degrés à droite
+  if (bumperAv){
+    tournerAngle(90.0); 
+    delay(500); // Pause pour éviter les rebonds du bouton
+  }
+  
+  // Appuyer sur le bumper arrière fait avancer de 50 cm
+  if (bumperArr){
+    avancerDistance(50.0);
+    delay(500); // Pause anti-rebond
+  } 
+}
