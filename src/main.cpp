@@ -12,6 +12,7 @@ Inclure les librairies de functions que vous voulez utiliser
 #include <LibRobus.h>
 #include "mouvement.h"
 #include "main.h"
+#include "sifflet.cpp"
 
 /*
 Variables globales et defines
@@ -21,6 +22,7 @@ Variables globales et defines
 
 int vertpin = 48;
 int rougepin = 49;
+int pinsifflet = 47;
 
 float lab_posx = 0;
 float lab_posy = 0;
@@ -46,6 +48,7 @@ void setup(){
   ENCODER_Reset(1);
   ENCODER_Reset(0);
   Serial.println("Initialisation complete\n");
+  attendSifflet();
   delay(100);
 }
 
