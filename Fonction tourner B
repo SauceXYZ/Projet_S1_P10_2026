@@ -14,14 +14,14 @@ void tourner_roue(float angle, int direction){
     float nbr_pulses = 3200*((angle * circonference)/(360*taille_roue))
     if( direction == 0){
         MOTOR_SetSpeed(RIGHT, vitesse_rotation);
-        MOTOR_SetSpeed(LEFT, -vitesse_rotation);
+        MOTOR_SetSpeed(LEFT, -vitesse_rotation);}
         
      else{MOTOR_SetSpeed(RIGHT, -vitesse_rotation);
         MOTOR_SetSpeed(LEFT, vitesse_rotation);}
 
     while(abs(ENCODER_Read(LEFT) <= nbr_pulses)){
         delay(10);}
-    }
+    
     MOTOR_SetSpeed(RIGHT, 0);
     MOTOR_SetSpeed(LEFT, 0);
     delay(200);
