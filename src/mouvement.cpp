@@ -6,17 +6,19 @@
 
 #define SCAN_DEBUG 1
 
+static int32_t distance_enc_cm_precedent = 0;
+
 int avance(void)
 {
     float distance_enc_cm;
-    int compte=0;
+    int32_t compte=0;
     int vert;
     int rouge;
     float y_total = 500.0;
     float x_total_max = 50.0;
     float x_total_min = -50.0;
     compte = ENCODER_Read(1);  // Implementation for advancing
-    distance_enc_cm = (compte * (23.94/3200));
+    distance_enc_cm = (compte - distance_enc_cm_precedent) * (23.94/3200);
     //Serial.println(distance_enc_cm, DEC);
     vert = digitalRead(vertpin);
     rouge = digitalRead(rougepin);
@@ -47,8 +49,8 @@ int avance(void)
                 {
                     lab_posx=lab_posx - distance_enc_cm;
                 }
-                ENCODER_Reset(1);
-                ENCODER_Reset(0);
+                distance_enc_cm_precedent = compte;
+
             }
 
         }
@@ -162,15 +164,18 @@ void faitFace(int orientation)
         {
         case FACE_GAUCHE:
             pid_tourne(TOURNE_GAUCHE,90);
+            distance_enc_cm_precedent = ENCODER_Read(1);
             direction = FACE_GAUCHE;
             break;
         
         case FACE_DROIT:
             pid_tourne(TOURNE_DROITE,90);
+            distance_enc_cm_precedent = ENCODER_Read(1);
             direction = FACE_DROIT;
         
         case FACE_ARRIERE:
             pid_tourne(TOURNE_DROITE, 180);
+            distance_enc_cm_precedent = ENCODER_Read(1);
             direction = FACE_ARRIERE;
         }
         break;
@@ -179,15 +184,18 @@ void faitFace(int orientation)
         {
         case FACE_GAUCHE:
             pid_tourne(TOURNE_GAUCHE,180);
+            distance_enc_cm_precedent = ENCODER_Read(1);
             direction = FACE_GAUCHE;
             break;
     
         case FACE_AVANT:
             pid_tourne(TOURNE_GAUCHE,90);
+            distance_enc_cm_precedent = ENCODER_Read(1);
             direction = FACE_DROIT;
         
         case FACE_ARRIERE:
             pid_tourne(TOURNE_DROITE, 90);
+            distance_enc_cm_precedent = ENCODER_Read(1);
             direction = FACE_ARRIERE;
         }
         break;
@@ -196,15 +204,18 @@ void faitFace(int orientation)
         {
         case FACE_DROIT:
             pid_tourne(TOURNE_DROITE,180);
+            distance_enc_cm_precedent = ENCODER_Read(1);
             direction = FACE_DROIT;
             break;
     
         case FACE_AVANT:
             pid_tourne(TOURNE_DROITE,90);
+            distance_enc_cm_precedent = ENCODER_Read(1);
             direction = FACE_DROIT;
         
         case FACE_ARRIERE:
             pid_tourne(TOURNE_GAUCHE, 90);
+            distance_enc_cm_precedent = ENCODER_Read(1);
             direction = FACE_ARRIERE;
         }
         break;
