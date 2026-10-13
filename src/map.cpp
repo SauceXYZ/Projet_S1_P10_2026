@@ -92,6 +92,8 @@ void tournerSelonAngle(int angle){
 }
 
 char tournerDansDirection(char directionActuelle, char directionVoulue){
+    Serial.print("Direction actuelle : ");
+    Serial.println(directionActuelle);
     switch(directionActuelle){
         case 'N':
             switch(directionVoulue){

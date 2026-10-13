@@ -46,7 +46,7 @@ const int PULSEATTENDUDROIT = 2300;
 const int PULSEATTENDUGAUCHE = 2300;
 float vitesseDroite = 0.50;
 float vitesseGauche = 0.59;
-float pulseParSeconde = 6.5;
+float pulseParSeconde = 7.0;
 
 /*
 Vos propres fonctions sont creees ici
@@ -74,7 +74,8 @@ void recule(float vitessedroit, float vitessegauche){
   MOTOR_SetSpeed(LEFT, -vitessegauche);
 };
 
-void pid(){
+void pid(int delai){
+    int pulseAttendu = delai * pulseParSeconde * 2.25;
     float kGauche=0;  //Différence
     float kDroite=0;  //Différence
     float differenceK = 0;
@@ -104,10 +105,10 @@ void pid(){
       vitesseGauche -= -differenceK*KP/2;
     }
     } else {
-      kDroite = PULSEATTENDUDROIT - compteurDroit;
+      kDroite = pulseAttendu - compteurDroit;
       vitesseDroite += kDroite*KP;
 
-      kGauche = PULSEATTENDUGAUCHE - compteurGauche;
+      kGauche = pulseAttendu - compteurGauche;
       vitesseGauche += kGauche*KP;
     }
     Serial.print("vitesseDroite: ");
@@ -119,32 +120,19 @@ void pid(){
 };
 
 
-
-
-
-
-
-
 void avancerDistance(float distance){
     float pi = 3.14159;
+    int pulseParTour = 2700;
     
     // On utilise "long" pour les pulses car ce sont de grands nombres entiers
-    float pulses_requis =  ((distance * clicParTour) / (pi * diametreRoue));
+    float pulses_requis =  ((distance * pulseParTour) / (pi * diametreRoue));
     float pulses_deplace = 0;
 
     while(pulses_deplace < pulses_requis){
         //avancerDroitPID();
-        pid();
-        if(pulses_deplace > 3*pulses_requis/4){
-          vitesseDroite -= 0.2;
-          vitesseGauche -= 0.2;
-        }
+        pid(50);
         delay(50);
         pulses_deplace += ENCODER_Read(RIGHT);
-        Serial.print("vitesseDroite: ");
-        Serial.println(vitesseDroite);
-        Serial.print("vitesseGauche: ");
-        Serial.println(vitesseGauche);
 
     }
     
@@ -165,13 +153,13 @@ bool verifierMur(){
 void ajusterPositionRobot(char direction){
     switch(direction){
         case 'N':
-            y++;
+            y--;
             break;
         case 'E':
             x++;
             break;
         case 'S':
-            y--;
+            y++;
             break;
         case 'O':
             x--;
@@ -181,12 +169,18 @@ void ajusterPositionRobot(char direction){
 
 void directionAAller(){
     possibiliteTape(x, y);
+    Serial.print("x,y");
+    Serial.print(x);
+    Serial.print(",");
+    Serial.println(y);
     char tabDirection[4] = {'N', 'E', 'S', 'O'};
     for(int i = 0; i < 4; i++){
         if(possibilite[i] == 1){
         direction = tournerDansDirection(direction, tabDirection[i]);
+        Serial.print("Direction apres tournerDansDirection: ");
+        Serial.println(direction);
         }
-        if(!verifierMur()){
+        if(verifierMur()){
             avancerDistance(50);
             ajusterPositionRobot(direction);
             i=4; // on Sort de la boucle
@@ -196,12 +190,6 @@ void directionAAller(){
     }
     
 }
-
-
-
-
-
-
 
 /*
 Fonctions d'initialisation (setup)
@@ -233,14 +221,17 @@ void loop() {
   bumperAv = ROBUS_IsBumper(2);
 
   if (bumperAv){
-    tournerDroit();
+    etat = 0;
   }
   
   // remplacer par détection de sifflet
   if (bumperArr){
-    avancerDistance(50);
+    etat = 1;
     //directionAAller();
   } 
+  if(etat == 1){
+    directionAAller();
+  }
   /*if(etat == 1){
     delay(200);
     pid();
