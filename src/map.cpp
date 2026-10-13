@@ -72,6 +72,8 @@ void arret(){
 };
 
 void tournerSelonAngle(int angle){
+    arret();
+    delay(300);
     ENCODER_ReadReset(RIGHT);
   float pi = 3.1415926535;
   float distanceParDegree = (distanceEntreRoues * pi) /360;
