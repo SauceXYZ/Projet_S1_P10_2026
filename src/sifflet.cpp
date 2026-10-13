@@ -6,16 +6,8 @@ bool debut_lock = 0;
 
 void attendSifflet(void)
 {
-while(1)
+while(!ROBUS_IsBumper(3))//!digitalRead(pinsifflet))
   {
-    if (digitalRead(pinsifflet) == 1)
-    {
-      debut_lock = 1;
-      break;
-    }
-    else
-    {
-      debut_lock = 0;
-    }
+    delay(100);
   }
 }

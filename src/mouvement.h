@@ -11,5 +11,6 @@ void tourne(char direction);
 void tourner_gauche(void);
 void tourner_droite(void);
 void scan(void);
+void faitFace(int orientation);
 
 #endif

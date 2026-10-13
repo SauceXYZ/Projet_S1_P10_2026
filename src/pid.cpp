@@ -2,7 +2,7 @@
 #include <LibRobus.h>
 #include "main.h"
 
-#define DEBUG_EN 1
+#define DEBUG_EN 0
 
 const float vitesseReference = 0.5f;
 const unsigned long periodeMs = 50;
@@ -30,8 +30,6 @@ void pid_init(void)
     encodeurDroitPrecedent = ENCODER_Read(1);
     tempsPrecedent = millis();
     initialise = true;
-    MOTOR_SetSpeed(0, vitesseReference);
-    MOTOR_SetSpeed(1, vitesseReference);
 }
 //source : https://www.teachmemicro.com/arduino-pid-control-tutorial/
 void pid_avance(void)
@@ -125,6 +123,8 @@ void pid_tourne(bool direction, int angle)
     while(abs(ENCODER_Read(0)) < nbrPulsesPourTourner && abs(ENCODER_Read(1)) < nbrPulsesPourTourner) {
         delay(10);
     }
+    ENCODER_Reset(0);
+    ENCODER_Reset(1);
 
     MOTOR_SetSpeed(0, 0.0f);
     MOTOR_SetSpeed(1, 0.0f);

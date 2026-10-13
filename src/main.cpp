@@ -12,7 +12,8 @@ Inclure les librairies de functions que vous voulez utiliser
 #include <LibRobus.h>
 #include "mouvement.h"
 #include "main.h"
-#include "sifflet.cpp"
+#include "sifflet.h"
+#include "pid.h"  
 
 /*
 Variables globales et defines
@@ -41,14 +42,19 @@ Fonctions d'initialisation (setup)
 */
 void setup(){
   BoardInit();
+  pid_init();
   
   //initialisation
   pinMode(vertpin, INPUT);
   pinMode(rougepin, INPUT);
   ENCODER_Reset(1);
   ENCODER_Reset(0);
+  MOTOR_SetSpeed(0, 0);
+  MOTOR_SetSpeed(1, 0);
   Serial.println("Initialisation complete\n");
+
   attendSifflet();
+  Serial.println("Sifflet detecter");
   delay(100);
 }
 
@@ -57,10 +63,12 @@ Fonctions de boucle infini
  -> Se fait appeler perpetuellement suite au "setup"
 */
 void loop() {
-  if (debut_lock == 1) {
-    if(avance() == 1) {
-      scan();
-      Serial.println("Scan complete");
-    }
-  }
+  // if(avance() == 1) {
+  //   scan();
+  //   //Serial.println("Scan complete");
+  // }
+  //pid_avance();
+
+  MOTOR_SetSpeed(0,0.5);
+  MOTOR_SetSpeed(1,0.5);
 }
