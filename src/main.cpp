@@ -169,17 +169,19 @@ void ajusterPositionRobot(char direction){
 
 void directionAAller(){
     possibiliteTape(x, y);
-    Serial.print("x,y");
-    Serial.print(x);
-    Serial.print(",");
-    Serial.println(y);
     char tabDirection[4] = {'N', 'E', 'S', 'O'};
+    Serial.print("Possibilite: ");
+          Serial.print(possibilite[0]);
+          Serial.print(possibilite[1]);
+          Serial.print(possibilite[2]);
+          Serial.println(possibilite[3]);
     for(int i = 0; i < 4; i++){
         if(possibilite[i] == 1){
+          
         direction = tournerDansDirection(direction, tabDirection[i]);
         Serial.print("Direction apres tournerDansDirection: ");
         Serial.println(direction);
-        }
+
         if(verifierMur()){
             avancerDistance(50);
             ajusterPositionRobot(direction);
@@ -187,6 +189,8 @@ void directionAAller(){
         } else {
             possibilite[i] = 0;
         }
+        }
+        
     }
     
 }
@@ -200,7 +204,7 @@ Fonctions d'initialisation (setup)
 void setup(){
   BoardInit();
 
-  x = 1;
+  x = 0;
   y = 5;
   direction = 'N';
   
@@ -226,8 +230,8 @@ void loop() {
   
   // remplacer par détection de sifflet
   if (bumperArr){
-    etat = 1;
-    //directionAAller();
+    //etat = 1;
+    directionAAller();
   } 
   if(etat == 1){
     directionAAller();

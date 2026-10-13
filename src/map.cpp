@@ -25,7 +25,12 @@ int carre[3][6] = {
 int possibilite[4] = {0, 0, 0, 0};
 
 void possibiliteTape(int x, int y){
-
+    Serial.print(carre[1][5]&2);
+    
+    possibilite[0] = 0;
+    possibilite[1] = 0;
+    possibilite[2] = 0;
+    possibilite[3] = 0;
     if((carre[x][y] & 8) == 0){
         // avancer
         possibilite[0] = 1;
