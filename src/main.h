@@ -6,10 +6,12 @@
 #define FACE_AVANT 2
 #define FACE_ARRIERE 3
 
-#define DIAMETRE_ROUE_MM 70.0f
+#define DIAMETRE_ROUE_MM 76.2f
 #define VITESSE_REFERENCE 0.5f
 #define TOURNE_GAUCHE 0
 #define TOURNE_DROITE 1
+
+#define DISTANCEENTREROUES_MM 190
 
 extern int vertpin;
 extern int rougepin;
