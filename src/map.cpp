@@ -54,20 +54,16 @@ float vitesse = 0.50;
 int clicParTour = 3200;
 
 float diametreRoue = 7.62; // en cm
-float distanceEntreRoues = 18.0; // en cm
+float distanceEntreRoues = 17.2; // en cm
 
 void tournerGauche(){
   MOTOR_SetSpeed(RIGHT, -0.5*vitesse);
   MOTOR_SetSpeed(LEFT, 0.5*vitesse);
-  delay(250);
-  arret();
 }
 
 void tournerDroit(){
   MOTOR_SetSpeed(RIGHT, 0.5*vitesse);
   MOTOR_SetSpeed(LEFT, -0.5*vitesse);
-  delay(250);
-  arret();
 }
 
 void arret(){
@@ -85,11 +81,10 @@ void tournerSelonAngle(int angle){
   while(pulses_deplace < pulses_requis){
     if(angle > 0){
         tournerDroit();
-        arret();
     } else {
         tournerGauche();
-        arret();
     }
+    delay(50);
     pulses_deplace = abs(ENCODER_Read(RIGHT));
   }
   pulses_deplace = 0;
