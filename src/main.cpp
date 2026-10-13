@@ -204,7 +204,7 @@ Fonctions d'initialisation (setup)
 void setup(){
   BoardInit();
 
-  x = 0;
+  x = 1;
   y = 5;
   direction = 'N';
   
