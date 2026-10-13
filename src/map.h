@@ -6,7 +6,7 @@ extern int clicParTour;
 extern float diametreRoue;
 
 void possibiliteTape(int x, int y);
-void tourneGauche();
+void tournerGauche();
 void tournerDroit();
 void arret();
 void tournerSelonAngle(int angle);
