@@ -2,14 +2,8 @@
 #define MAP_H
 
 extern int possibilite[4];
-extern int clicParTour;
-extern float diametreRoue;
+extern int carre[3][6];
 
 void possibiliteTape(int x, int y);
-void tournerGauche();
-void tournerDroit();
-void arret();
-void tournerSelonAngle(int angle);
-char tournerDansDirection(char directionActuelle, char directionVoulue);
 
 #endif
