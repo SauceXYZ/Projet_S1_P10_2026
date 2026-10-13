@@ -11,22 +11,10 @@ Date: 08/10/2026
 #include "stdbool.h"
 #include "stdio.h"
 
-#include "main.h"
 #include "map.h"
 #include "control.h"
 #include "pid.h"
-
-//Initialisation des bumpers
-bool bumperArr=false;
-bool bumperAva=false;
-bool bumperGch=false;
-bool bumperDrt=false;
-
-//Initialisation des capteurs
-bool vert = false;
-bool rouge = false;
-bool sifflet = false;
-
+#include "sensor.h"
 
 //Fct Avance dans control.cpp
 //Fct Recule dans control.cpp
@@ -35,17 +23,6 @@ bool sifflet = false;
 //Fct directionAller dans control.cpp
 
 //Fct pid fans pid.cpp
-
-
-void beep(int count){
-  for(int i=0;i<count;i++){
-    AX_BuzzerON();
-    delay(100);
-    AX_BuzzerOFF();
-    delay(100);  
-  }
-  delay(400);
-}
 
 void setup(){
   BoardInit();
@@ -69,7 +46,7 @@ void loop() {
   bumperDrt = ROBUS_IsBumper(0);
 
   if (bumperAva){
-    tournerSelonAngle(-180);
+    //tournerDansDirection();
   }
   if (bumperArr){
     //tournerSelonAngle(180);

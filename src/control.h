@@ -1,6 +1,7 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
+extern const float pi;
 extern char direction;
 extern int etat;
 extern int pos_y;

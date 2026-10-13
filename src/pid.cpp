@@ -11,11 +11,10 @@ Date: 13/10/2026
 #include "stdbool.h"
 #include "stdio.h"
 
-#include "main.h"
 #include "map.h"
 #include "control.h"
 #include "pid.h"
-
+#include "sensor.h"
 
 //Constantes moteur & robot
 const int CLICPARTOUR = 3200;

@@ -11,10 +11,10 @@ Date: 13/10/2026
 #include "stdbool.h"
 #include "stdio.h"
 
-#include "main.h"
 #include "map.h"
 #include "control.h"
 #include "pid.h"
+#include "sensor.h"
 
 //Le robot va avoir un x et y
 // Le robot va avoir un sens de déplacement 0 1 2 3 ou qqch

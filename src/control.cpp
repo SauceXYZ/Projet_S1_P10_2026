@@ -11,48 +11,53 @@ Date: 13/10/2026
 #include "stdbool.h"
 #include "stdio.h"
 
-#include "main.h"
 #include "map.h"
 #include "control.h"
 #include "pid.h"
+#include "sensor.h"
 
-int etat = 0;           // 0 = avancer, 1 = reculer, 2 = tourner
+//Constante Math
+const float pi = 3.141593;
+int etat = 0;           // 0=avancer, 1=reculer, 2=tourner, 3=stop
 char direction = 'N';   // N = Nord, E = Est, S = Sud, O = Ouest
 int pos_y = 0;
 int pos_x = 0;
 
 void avance(float vitessedroit, float vitessegauche){
+    etat = 0;
   MOTOR_SetSpeed(RIGHT,vitessedroit);
   MOTOR_SetSpeed(LEFT, vitessegauche);
 };
 
 void recule(float vitessedroit, float vitessegauche){
+    etat = 1;
   MOTOR_SetSpeed(RIGHT, -vitessedroit);
   MOTOR_SetSpeed(LEFT, -vitessegauche);
-  delay(250);
-  arret();
 }
 
 void tournerGauche(){
+    etat = 2;
   MOTOR_SetSpeed(RIGHT, -0.5*vitesseDroite);
   MOTOR_SetSpeed(LEFT, 0.5*vitesseGauche);
 }
 
 void tournerDroit(){
+    etat = 2;
   MOTOR_SetSpeed(RIGHT, 0.5*vitesseDroite);
   MOTOR_SetSpeed(LEFT, -0.5*vitesseGauche);
 }
 
 void arret(){
+    etat = 3;
   MOTOR_SetSpeed(RIGHT, 0);
   MOTOR_SetSpeed(LEFT, 0);
 };
 
 void tournerSelonAngle(int angle){
     arret();
+    etat = 2;
     delay(300);
     ENCODER_ReadReset(RIGHT);
-  float pi = 3.1415926535;
   float distanceParDegree = (DISTANCEENTREROUES * pi) /360;
   float distance = distanceParDegree * abs(angle);
   float pulses_requis = (distance * CLICPARTOUR) / (pi * DIAMETREROUE);
@@ -69,6 +74,7 @@ void tournerSelonAngle(int angle){
   pulses_deplace = 0;
   arret();
 }
+
 
 char tournerDansDirection(char directionActuelle, char directionVoulue){
     printf("Direction actuelle : %c",directionActuelle);
@@ -158,7 +164,6 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
 }
 
 void avancerDistance(float distance){
-    float pi = 3.14159;
     int pulseParTour = 2700;
     
     // On utilise "long" pour les pulses car ce sont de grands nombres entiers

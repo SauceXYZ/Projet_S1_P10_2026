@@ -1,5 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef SENSOR_H
+#define SENSOR_H
 
 //Numero des bumpers
 #define DROIT 1
@@ -20,5 +20,8 @@ extern bool bumperDrt;
 extern bool vert;
 extern bool rouge;
 extern bool sifflet;
+
+
+void beep(int count);
 
 #endif
