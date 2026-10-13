@@ -9,7 +9,7 @@
 //-1 a 1 (signe = direction)
 
 /*
-Projet: Le nom du script
+Projet: Labyrinthe
 Equipe: Equipe P10
 Auteurs: Philippe, Nehla, Adam, Etienne
 Description: Script d'execution du parcours pour le robot
@@ -20,6 +20,7 @@ Date: 08/10/2026
 Inclure les librairies de functions que vous voulez utiliser
 */
 #include <LibRobus.h>
+#include "map.h"
 
 /*
 Variables globales et defines
@@ -34,9 +35,6 @@ bool vert = false;
 bool rouge = false;
 int etat = 0; // = 0 arrêt 1 = avance 2 = recule 3 = TourneDroit 4 = TourneGauche
 int etatPast = 0;
-float vitesse = 0.50;
-int clicParTour = 3200;
-float diametreRoue = 7.62; // en cm
 
 int x = 0;
 int y = 0;
@@ -48,6 +46,7 @@ const int PULSEATTENDUDROIT = 2300;
 const int PULSEATTENDUGAUCHE = 2300;
 float vitesseDroite = 0.50;
 float vitesseGauche = 0.59;
+float pulseParSeconde = 6.5;
 
 /*
 Vos propres fonctions sont creees ici
@@ -63,14 +62,11 @@ void beep(int count){
   delay(400);
 }
 
-void arret(){
-  MOTOR_SetSpeed(RIGHT, 0);
-  MOTOR_SetSpeed(LEFT, 0);
-};
+
 
 void avance(float vitessedroit, float vitessegauche){
-  MOTOR_SetSpeed(RIGHT,vitessedroit);
   MOTOR_SetSpeed(LEFT, vitessegauche);
+  MOTOR_SetSpeed(RIGHT,vitessedroit);
 };
 
 void recule(float vitessedroit, float vitessegauche){
@@ -122,38 +118,87 @@ void pid(){
     avance(vitesseDroite, vitesseGauche);
 };
 
-void tourneGauche(){
-  MOTOR_SetSpeed(RIGHT, -0.5*vitesse);
-  MOTOR_SetSpeed(LEFT, 0.5*vitesse);
-  delay(820);
-  arret();
-}
 
-void tournerDroit(){
-  MOTOR_SetSpeed(RIGHT, 0.5*vitesse);
-  MOTOR_SetSpeed(LEFT, -0.5*vitesse);
-  delay(820);
-  arret();
-}
+
+
+
+
+
 
 void avancerDistance(float distance){
     float pi = 3.14159;
     
     // On utilise "long" pour les pulses car ce sont de grands nombres entiers
-    float pulses_depart = ENCODER_Read(RIGHT);
-    float pulses_requis = pulses_depart + ((distance * clicParTour) / (pi * diametreRoue));
-    float pulses_actuels = pulses_depart;
+    float pulses_requis =  ((distance * clicParTour) / (pi * diametreRoue));
+    float pulses_deplace = 0;
 
-    while(pulses_actuels < pulses_requis){
-        // On ÉCRASE la valeur par la nouvelle lecture (pas de +=)
-        pulses_actuels = ENCODER_Read(RIGHT); 
-        
-        avancerDroitPID();
+    while(pulses_deplace < pulses_requis){
+        //avancerDroitPID();
+        pid();
+        if(pulses_deplace > 3*pulses_requis/4){
+          vitesseDroite -= 0.2;
+          vitesseGauche -= 0.2;
+        }
         delay(50);
+        pulses_deplace += ENCODER_Read(RIGHT);
+        Serial.print("vitesseDroite: ");
+        Serial.println(vitesseDroite);
+        Serial.print("vitesseGauche: ");
+        Serial.println(vitesseGauche);
+
     }
     
     arret();
 }
+
+
+bool verifierMur(){
+    vert = digitalRead(vertpin);
+    rouge = digitalRead(rougepin);
+    if(vert && rouge){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void ajusterPositionRobot(char direction){
+    switch(direction){
+        case 'N':
+            y++;
+            break;
+        case 'E':
+            x++;
+            break;
+        case 'S':
+            y--;
+            break;
+        case 'O':
+            x--;
+            break;
+    }
+}
+
+void directionAAller(){
+    possibiliteTape(x, y);
+    char tabDirection[4] = {'N', 'E', 'S', 'O'};
+    for(int i = 0; i < 4; i++){
+        if(possibilite[i] == 1){
+        direction = tournerDansDirection(direction, tabDirection[i]);
+        }
+        if(!verifierMur()){
+            avancerDistance(50);
+            ajusterPositionRobot(direction);
+            i=4; // on Sort de la boucle
+        } else {
+            possibilite[i] = 0;
+        }
+    }
+    
+}
+
+
+
 
 
 
@@ -166,6 +211,10 @@ Fonctions d'initialisation (setup)
 */
 void setup(){
   BoardInit();
+
+  x = 1;
+  y = 5;
+  direction = 'N';
   
   //initialisation
   pinMode(vertpin, INPUT);
@@ -173,6 +222,7 @@ void setup(){
   delay(100);
   beep(3);
 }
+
 
 /*
 Fonctions de boucle infini
@@ -186,16 +236,10 @@ void loop() {
     tournerDroit();
   }
   
+  // remplacer par détection de sifflet
   if (bumperArr){
     avancerDistance(50);
-    /*if(etat == 0){
-      etat = 1;
-    }
-    else {
-        Serial.print("bumperArr: ");
-        Serial.println(bumperArr);
-        etat = 0;
-    }*/
+    //directionAAller();
   } 
   /*if(etat == 1){
     delay(200);
@@ -206,7 +250,6 @@ void loop() {
   }*/
   
 }
-
 
 
 

@@ -1,4 +1,5 @@
 #include <LibRobus.h>
+#include "map.h"
 
 //Le robot va avoir un x et y
 // Le robot va avoir un sens de déplacement 0 1 2 3 ou qqch
@@ -23,32 +24,160 @@ int carre[3][6] = {
 //1 bloquer a gauche
 int possibilite[4] = {0, 0, 0, 0};
 
-void progresser(int x, int y, int sens){
+void possibiliteTape(int x, int y){
 
-    if(carre[x][y] & 8 == 0){
+    if((carre[x][y] & 8) == 0){
         // avancer
         possibilite[0] = 1;
     }
-    if(carre[x][y] & 4 == 0){
+    if((carre[x][y] & 4) == 0){
         // droite
         possibilite[1] = 1;
     }
-    if(carre[x][y] & 2 == 0){
+    if((carre[x][y] & 2) == 0){
         // reculer
         possibilite[2] = 1;
     }
-    if(carre[x][y] & 1 == 0){
+    if((carre[x][y] & 1) == 0){
         // gauche
         possibilite[3] = 1;
         
     }
-
-   
-    
 }
 
-void verifierMur(){
-    
+float vitesse = 0.50;
+int clicParTour = 3200;
+
+float diametreRoue = 7.62; // en cm
+float distanceEntreRoues = 16.0; // en cm
+
+void tourneGauche(){
+  MOTOR_SetSpeed(RIGHT, -0.5*vitesse);
+  MOTOR_SetSpeed(LEFT, 0.5*vitesse);
+  //delay(820);
+  //arret();
 }
+
+void tournerDroit(){
+  MOTOR_SetSpeed(RIGHT, 0.75*vitesse);
+  MOTOR_SetSpeed(LEFT, -0.75*vitesse);
+  //delay(820);
+  //arret();
+}
+
+void arret(){
+  MOTOR_SetSpeed(RIGHT, 0);
+  MOTOR_SetSpeed(LEFT, 0);
+};
+
+
+
+void tournerSelonAngle(int angle){
+    ENCODER_ReadReset(RIGHT);
+  float pi = 3.1415926535;
+  float distanceParDegree = (distanceEntreRoues * pi) /360;
+  float distance = distanceParDegree * angle;
+  float pulses_requis = (distance * clicParTour) / (pi * diametreRoue);
+  float pulses_deplace = 0;
+  while(pulses_deplace < pulses_requis){
+    if(angle > 0){
+      tournerDroit();
+    } else {
+      tourneGauche();
+    }
+    pulses_deplace = ENCODER_Read(RIGHT);
+  }
+  pulses_deplace = 0;
+  arret();
+}
+
+char tournerDansDirection(char directionActuelle, char directionVoulue){
+    switch(directionActuelle){
+        case 'N':
+            switch(directionVoulue){
+                case 'N':
+                    return 'N';
+                case 'E':
+                {
+                    tournerSelonAngle(-90);
+                    return 'E';
+                }
+                case 'S':
+                {
+                    tournerSelonAngle(180);
+                    return 'S';
+                }
+                case 'O':
+                {
+                    tournerSelonAngle(90);
+                    return 'O';
+                }
+            }
+        case 'E':
+            switch(directionVoulue){
+                case 'N':
+                {
+                    tournerSelonAngle(90);
+                    return 'N';
+                }
+                case 'E':
+                    return 'E';
+                case 'S':
+                {
+                    tournerSelonAngle(-90);
+                    return 'S';
+                }
+                case 'O':
+                {
+                    tournerSelonAngle(180);
+                    return 'O';
+                }
+            }
+        case 'S':
+            switch(directionVoulue){
+                case 'N':
+                {
+                    tournerSelonAngle(180);
+                    return 'N';
+                }
+                case 'E':
+                {
+                    tournerSelonAngle(90);
+                    return 'E';
+                }
+                case 'S':
+                    return 'S';
+                case 'O':
+                {
+                    tournerSelonAngle(-90);
+                    return 'O';
+                }
+            }
+        case 'O':
+            switch(directionVoulue){
+                case 'N':
+                {
+                    tournerSelonAngle(-90);
+                    return 'N';
+                }
+                case 'E':
+                {
+                    tournerSelonAngle(180);
+                    return 'E';
+                }
+                case 'S':
+                {
+                    tournerSelonAngle(90);
+                    return 'S';
+                }
+                case 'O':
+                    return 'O';
+            }
+    }
+    return directionActuelle;
+}
+
+
+
 
 
