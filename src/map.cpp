@@ -54,7 +54,7 @@ float vitesse = 0.50;
 int clicParTour = 3200;
 
 float diametreRoue = 7.62; // en cm
-float distanceEntreRoues = 16.0; // en cm
+float distanceEntreRoues = 18.0; // en cm
 
 void tournerGauche(){
   MOTOR_SetSpeed(RIGHT, -0.5*vitesse);

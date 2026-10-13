@@ -28,7 +28,7 @@ Variables globales et defines
  -> L'ensemble des fonctions y ont acces
 */
 bool bumperArr=false;
-bool bumperAv=false;
+bool bumperAva=false;
 bool bumperGch=false;
 bool bumperDrt=false;
 
@@ -36,9 +36,6 @@ int vertpin = 48;
 int rougepin = 49;
 bool vert = false;
 bool rouge = false;
-
-int etat = 0; // = 0 arrêt 1 = avance 2 = recule 3 = TourneDroit 4 = TourneGauche
-int etatPast = 0;
 
 int compteurTotaleDroit = 0;
 int compteurTotaleGauche = 0;
@@ -141,11 +138,11 @@ Fonctions de boucle infini
 */
 void loop() {
   bumperArr = ROBUS_IsBumper(3);
-  bumperAv = ROBUS_IsBumper(2);
+  bumperAva = ROBUS_IsBumper(2);
   bumperGch = ROBUS_IsBumper(1);
   bumperDrt = ROBUS_IsBumper(0);
 
-  if (bumperAv){
+  if (bumperAva){
     tournerSelonAngle(-180);
   }
   if (bumperArr){
@@ -156,24 +153,7 @@ void loop() {
   }
   if(bumperGch){
     tournerSelonAngle(90);
-  }
-
-/*if(etat == 0){
-      etat = 1;
-    }
-    else {
-        Serial.print("bumperArr: ");
-        Serial.println(bumperArr);
-        etat = 0;
-    }*/
-
-  /*if(etat == 1){
-    delay(200);
-    pid();
-  } else if(etat == 0){
-    arret();
-    delay(500);
-  }*/  
+  } 
 }
 
 
