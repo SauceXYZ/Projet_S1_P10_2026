@@ -2,11 +2,27 @@
 #include "pid.h"
 #include <LibRobus.h>
 #include "main.h"
-#include "pid.h"
 
-#define SCAN_DEBUG 1
+#define SCAN_DEBUG 0
 
-static int32_t distance_enc_cm_precedent = 0;
+int32_t encodeur_1_precedent = 0;
+
+static void attendSerial(void)
+{
+    // Each pause requires new input; discard anything already buffered.
+    while (Serial.available() > 0)
+    {
+        Serial.read();
+    }
+
+    // Consume the input and ignore the Serial Monitor's CR/LF line endings.
+    int caractere;
+    do
+    {
+        while (Serial.available() == 0) {}
+        caractere = Serial.read();
+    } while (caractere == '\r' || caractere == '\n');
+}
 
 int avance(void)
 {
@@ -18,12 +34,15 @@ int avance(void)
     float x_total_max = 50.0;
     float x_total_min = -50.0;
     compte = ENCODER_Read(1);  // Implementation for advancing
-    distance_enc_cm = (compte - distance_enc_cm_precedent) * (23.94/3200);
+    distance_enc_cm = (compte - encodeur_1_precedent) * (23.94/3200);
     //Serial.println(distance_enc_cm, DEC);
     vert = digitalRead(vertpin);
     rouge = digitalRead(rougepin);
     //Serial.println("A");
-
+    // Serial.print("DEL vert: ");
+    // Serial.print(vert);
+    // Serial.print(" | DEL rouge: ");
+    // Serial.println(rouge);
     if (vert && rouge)
     {
         //Serial.println("B");
@@ -49,7 +68,7 @@ int avance(void)
                 {
                     lab_posx=lab_posx - distance_enc_cm;
                 }
-                distance_enc_cm_precedent = compte;
+                encodeur_1_precedent = compte;
 
             }
 
@@ -65,7 +84,7 @@ int avance(void)
                     lab_posx = x_total_min+0.1;
                 }
 
-                faitFace(FACE_DROIT);
+                faitFace(FACE_AVANT);
                 return 0;
             }
             
@@ -94,7 +113,7 @@ int avance(void)
     }
     else
     {
-        //Serial.println("E");
+        Serial.println("E");
         MOTOR_SetSpeed(0,0);
         MOTOR_SetSpeed(1,0);
         return 1;
@@ -102,6 +121,7 @@ int avance(void)
     }
 return 0;
 } 
+
 
 // void tourner_gauche(void)
 // {
@@ -152,116 +172,48 @@ return 0;
 //     return;
 // }
 
+// Ordre des orientations pour une rotation vers la droite.
+static const int orientations[] = {FACE_AVANT, FACE_DROIT, FACE_ARRIERE, FACE_GAUCHE};
+
+static int indiceOrientation(int orientation)
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        if (orientations[i] == orientation) return i;
+    }
+    return -1;
+}
+
 void faitFace(int orientation)
 {
-    if (orientation == direction)
-    {return;}
+    const int depart = indiceOrientation(direction);
+    const int arrivee = indiceOrientation(orientation);
+    if (depart < 0 || arrivee < 0 || depart == arrivee) return;
 
-    switch (direction)
+    const int quartsDeTour = (arrivee - depart + 4) % 4;
+    if (quartsDeTour == 3)
     {
-    case FACE_AVANT:
-        switch (orientation)
-        {
-        case FACE_GAUCHE:
-            pid_tourne(TOURNE_GAUCHE,90);
-            distance_enc_cm_precedent = ENCODER_Read(1);
-            direction = FACE_GAUCHE;
-            break;
-        
-        case FACE_DROIT:
-            pid_tourne(TOURNE_DROITE,90);
-            distance_enc_cm_precedent = ENCODER_Read(1);
-            direction = FACE_DROIT;
-        
-        case FACE_ARRIERE:
-            pid_tourne(TOURNE_DROITE, 180);
-            distance_enc_cm_precedent = ENCODER_Read(1);
-            direction = FACE_ARRIERE;
-        }
-        break;
-    case FACE_DROIT:
-        switch (orientation)
-        {
-        case FACE_GAUCHE:
-            pid_tourne(TOURNE_GAUCHE,180);
-            distance_enc_cm_precedent = ENCODER_Read(1);
-            direction = FACE_GAUCHE;
-            break;
-    
-        case FACE_AVANT:
-            pid_tourne(TOURNE_GAUCHE,90);
-            distance_enc_cm_precedent = ENCODER_Read(1);
-            direction = FACE_DROIT;
-        
-        case FACE_ARRIERE:
-            pid_tourne(TOURNE_DROITE, 90);
-            distance_enc_cm_precedent = ENCODER_Read(1);
-            direction = FACE_ARRIERE;
-        }
-        break;
-    case FACE_GAUCHE:
-        switch (orientation)
-        {
-        case FACE_DROIT:
-            pid_tourne(TOURNE_DROITE,180);
-            distance_enc_cm_precedent = ENCODER_Read(1);
-            direction = FACE_DROIT;
-            break;
-    
-        case FACE_AVANT:
-            pid_tourne(TOURNE_DROITE,90);
-            distance_enc_cm_precedent = ENCODER_Read(1);
-            direction = FACE_DROIT;
-        
-        case FACE_ARRIERE:
-            pid_tourne(TOURNE_GAUCHE, 90);
-            distance_enc_cm_precedent = ENCODER_Read(1);
-            direction = FACE_ARRIERE;
-        }
-        break;
-    default:
-        break;
+        pid_tourne(TOURNE_GAUCHE, 90);
     }
+    else
+    {
+        pid_tourne(TOURNE_DROITE, quartsDeTour * 90);
+    }
+    direction = orientation;
 }
 
 void tourne(int directionDemande)
 {
-    if(direction == directionDemande)
-    {return;}
-    switch (directionDemande)
+    const int depart = indiceOrientation(direction);
+    if (depart < 0) return;
+
+    if (directionDemande == TOURNE_DROITE)
     {
-    case TOURNE_DROITE:
-        switch (direction)
-        {
-        case FACE_AVANT:
-            faitFace(FACE_DROIT);
-            break;
-
-        case FACE_GAUCHE:
-            faitFace(FACE_AVANT);
-            break;
-        case FACE_ARRIERE:
-            faitFace(FACE_GAUCHE);
-            break;
-        
-        }
-        break;
-    
-    case TOURNE_GAUCHE:
-        switch (direction)
-        {
-        case FACE_AVANT:
-            faitFace(FACE_GAUCHE);
-            break;
-
-        case FACE_DROIT:
-            faitFace(FACE_AVANT);
-            break;
-        case FACE_ARRIERE:
-            faitFace(FACE_DROIT);
-            break;
-        }
-        break;
+        faitFace(orientations[(depart + 1) % 4]);
+    }
+    else if (directionDemande == TOURNE_GAUCHE)
+    {
+        faitFace(orientations[(depart + 3) % 4]);
     }
 }
 
@@ -274,7 +226,11 @@ void scan(void)
     MOTOR_SetSpeed(0, 0);
     MOTOR_SetSpeed(1, 0);
     if(SCAN_DEBUG){Serial.println("Moteur stop");}
-    delay(1000);
+    //delay(1000);
+    if(SCAN_DEBUG){
+        Serial.println("Appuyer sur le bouton pour continuer le scan");
+        attendSerial();
+    }
 
     if(SCAN_DEBUG){Serial.println("Scan avant");}
     if(SCAN_DEBUG){Serial.print("LED vert: "); Serial.println(digitalRead(vertpin));}
@@ -283,31 +239,59 @@ void scan(void)
     {
         if(SCAN_DEBUG){Serial.println("objet detecte avant");}
         scan_avant = true;
+
+        if(SCAN_DEBUG){
+            Serial.println("Objet detecte avant, appuyer sur le bouton pour continuer le scan");
+            attendSerial();
+        }
     }
     else
     {
         if(SCAN_DEBUG){Serial.println("pas d'objet detecte avant");}
         scan_avant = false;
+        
+        if(SCAN_DEBUG){
+            Serial.println("Pas d'objet detecte avant, appuyer sur le bouton pour continuer le scan");
+            attendSerial();
+        }
     }
 
     if(scan_avant == false)
     {
         if(SCAN_DEBUG){Serial.println("Choix: avancer");}
+        
+        if(SCAN_DEBUG){
+            Serial.println("Fin scan, appuyer sur le bouton pour continuer");
+            attendSerial();
+        }
         return;
     }
 
 
     tourne(TOURNE_GAUCHE);
+    if(SCAN_DEBUG){
+        Serial.println("Fini de tourner a gauche, appuyer sur le bouton pour continuer le scan");
+        attendSerial();
+    }
     if(SCAN_DEBUG){Serial.println("Scan gauche");}
     delay(1000);
     if(digitalRead(rougepin) || digitalRead(vertpin))
     {
         if(SCAN_DEBUG){Serial.println("pas d'objet detecte a gauche");}
+        
+        if(SCAN_DEBUG){
+            Serial.println("appuyer sur le bouton pour continuer le scan");
+            attendSerial();
+        }
         scan_gauche = false;
     }
     else
     {
         if(SCAN_DEBUG){Serial.println("objet detecte a gauche");}
+        if(SCAN_DEBUG){
+            Serial.println("appuyer sur le bouton pour continuer le scan");
+            attendSerial();
+        }
         scan_gauche = true;
     }
 
@@ -318,11 +302,19 @@ void scan(void)
     if(digitalRead(rougepin) || digitalRead(vertpin))
     {
         if(SCAN_DEBUG){Serial.println("pas d'objet detecte a droite");}
+        if(SCAN_DEBUG){
+            Serial.println("appuyer sur le bouton pour continuer le scan");
+            attendSerial();
+        }
         scan_droit = false;
     }
     else
     {
         if(SCAN_DEBUG){Serial.println("objet detecte a droite");}
+        if(SCAN_DEBUG){
+            Serial.println("appuyer sur le bouton pour continuer le scan");
+            attendSerial();
+        }
         scan_droit = true;
     }
 
@@ -333,15 +325,28 @@ void scan(void)
     {
         if(SCAN_DEBUG){Serial.println("Choix: tourner gauche");}
         tourne(TOURNE_GAUCHE);
+        
+        if(SCAN_DEBUG){
+            Serial.println("fin du scan, appuyer sur le bouton pour continuer");
+            attendSerial();
+        }
     }
     else if(!scan_droit)
     {
         if(SCAN_DEBUG){Serial.println("Choix: tourner droit");}
         tourne(TOURNE_DROITE);
+        if(SCAN_DEBUG){
+            Serial.println("fin du scan, appuyer sur le bouton pour continuer");
+            attendSerial();
+        }
     }
     else{
         if(SCAN_DEBUG){Serial.println("Default face arriere");}
         tourne(TOURNE_GAUCHE);
         tourne(TOURNE_GAUCHE);
+        if(SCAN_DEBUG){
+            Serial.println("fin du scan, appuyer sur le bouton pour continuer");
+            attendSerial();
+        }
     }
 }

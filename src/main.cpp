@@ -63,12 +63,10 @@ Fonctions de boucle infini
  -> Se fait appeler perpetuellement suite au "setup"
 */
 void loop() {
-  // if(avance() == 1) {
-  //   scan();
-  //   //Serial.println("Scan complete");
-  // }
-  //pid_avance();
+  if(avance() == 1) {
+    scan();
+    //Serial.println("Scan complete");
+  }
 
-  MOTOR_SetSpeed(0,0.5);
-  MOTOR_SetSpeed(1,0.5);
+  
 }

@@ -7,7 +7,7 @@ int avance(void);
 int testavance(int distance);
 int detectObstacle(void);
 
-void tourne(char direction);
+void tourne(int direction);
 void tourner_gauche(void);
 void tourner_droite(void);
 void scan(void);

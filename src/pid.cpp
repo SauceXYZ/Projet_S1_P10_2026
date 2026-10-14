@@ -101,34 +101,90 @@ void pid_avance(void)
 
 void pid_tourne(bool direction, int angle)
 {
-    if (!initialise) {
-        pid_init();
-        return;
-    }
-    float distance = angle * (DISTANCEENTREROUES_MM * 3.14159f) / 360.0f;
-    int nbrPulsesPourTourner = (int)(distance / (DIAMETRE_ROUE_MM * 3.14159f) * 3200.0f);
+    const float vitesseMin = 0.15f;
+    const float vitesseMax = 0.4f;
+    const float acceleration = 0.8f; // Commande moteur par seconde.
+    const float kpPosition = 0.0008f;
+    const float kpSynchronisation = 0.0003f;
+    const int32_t tolerancePulses = 8;
+    const unsigned long periodeRotationMs = 5;
+
+    if (angle <= 0) return;
+
+    const float distance = angle * (DISTANCEENTREROUES_MM * 3.14159f) / 360.0f;
+    const int32_t cible = (int32_t)(distance / (DIAMETRE_ROUE_MM * 3.14159f) * 3200.0f);
     Serial.print("Nombre de pulses pour tourner: ");
-    Serial.println(nbrPulsesPourTourner);
-
-    if (direction == true) {
-        Serial.println("Tourne droite");
-        MOTOR_SetSpeed(0, vitesseReference);
-        MOTOR_SetSpeed(1, -vitesseReference);
+    Serial.println(cible);
+    if(direction == TOURNE_DROITE) {
+        Serial.println("Tourne a droite");
     } else {
-        Serial.println("Tourne gauche");
-        MOTOR_SetSpeed(0, -vitesseReference);
-        MOTOR_SetSpeed(1, vitesseReference);
+        Serial.println("Tourne a gauche");
     }
 
-    while(abs(ENCODER_Read(0)) < nbrPulsesPourTourner && abs(ENCODER_Read(1)) < nbrPulsesPourTourner) {
-        delay(10);
+    const int32_t debut0 = ENCODER_Read(0);
+    const int32_t debut1 = ENCODER_Read(1);
+    float signe0 = 0.0f;
+    if(direction == TOURNE_DROITE)
+    {
+        signe0 = 1.0f;
+    } 
+    else {
+        signe0 = -1.0f;
     }
-    ENCODER_Reset(0);
-    ENCODER_Reset(1);
+    const float signe1 = -signe0;
+    const unsigned long debutMs = millis();
+    bool termine0 = false;
+    bool termine1 = false;
+
+    while (!termine0 || !termine1)
+    {
+        const int32_t parcours0 = abs(ENCODER_Read(0) - debut0);
+        const int32_t parcours1 = abs(ENCODER_Read(1) - debut1);
+        const int32_t restant0 = cible - parcours0;
+        const int32_t restant1 = cible - parcours1;
+
+        if(!termine0 && restant0 <= tolerancePulses) {
+            termine0 = true;
+            Serial.println("Roue gauche termine");
+        }
+        if(!termine1 && restant1 <= tolerancePulses) {
+            termine1 = true;
+            Serial.println("Roue droite termine");
+        }
+
+        // Limiter la montee de puissance au demarrage du pivot du caster.
+        float plafond = vitesseMin + acceleration * ((millis() - debutMs) / 1000.0f);
+        if (plafond > vitesseMax) plafond = vitesseMax;
+
+        // Ralentir selon la distance restante et freiner la roue en avance.
+        const float ecart = parcours0 - parcours1;
+        const float correction = (!termine0 && !termine1) ? kpSynchronisation * ecart : 0.0f;
+        float commande0 = kpPosition * restant0 - correction;
+        float commande1 = kpPosition * restant1 + correction;
+        if (commande0 < vitesseMin) {commande0 = vitesseMin;}
+        if (commande1 < vitesseMin) {commande1 = vitesseMin;}
+        if (commande0 > plafond) {commande0 = plafond;}
+        if (commande1 > plafond) {commande1 = plafond;}
+
+        // Une roue arrivee reste arretee pendant que l'autre termine.
+        if(!termine0) {
+            MOTOR_SetSpeed(0, signe0 * commande0);
+        } else {
+            MOTOR_SetSpeed(0, 0.0f);
+        }
+        if(!termine1) {
+            MOTOR_SetSpeed(1, signe1 * commande1);
+        } else {
+            MOTOR_SetSpeed(1, 0.0f);
+        }
+        if (!termine0 || !termine1) delay(periodeRotationMs);
+    }
 
     MOTOR_SetSpeed(0, 0.0f);
     MOTOR_SetSpeed(1, 0.0f);
-
+    // Laisser le robot se stabiliser avant de reprendre la mesure de position.
+    delay(100);
+    encodeur_1_precedent = ENCODER_Read(1);
     initialise = false;
+    Serial.println("Tourne complete");
 }
-
