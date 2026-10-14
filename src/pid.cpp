@@ -26,8 +26,8 @@ const int PULSEATTENDUGAUCHE = 2300;
 int compteurTotaleDroit = 0;
 int compteurTotaleGauche = 0;
 float vitesseBase = 0.20;
-float vitesseDroite = 0.20;
-float vitesseGauche = 0.20;
+float vitesseDroite = 0.40;
+float vitesseGauche = 0.49;
 float pulseParSeconde = 7.0;
 
 void pid(int delai){

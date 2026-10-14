@@ -9,7 +9,7 @@ extern bool bumperDrt;
 //Pins capteur sur Arduino
 #define vertPin 49
 #define rougePin 48
-#define siffletPin 52
+#define siffletPin 45
 
 extern bool proxVert;
 extern bool proxRouge;

@@ -24,6 +24,9 @@ void setup(){
   pinMode(rougePin, INPUT);
   pinMode(siffletPin, INPUT);
 
+  pos_x = 1;
+  pos_y = 5;
+
   //Fin de l'initialisation
   delay(100);
   beep(3);
@@ -35,7 +38,20 @@ void loop() {
   bumperAva = ROBUS_IsBumper(2);
   bumperDrt = ROBUS_IsBumper(1);
   bumperGch = ROBUS_IsBumper(0);
+  if(digitalRead(siffletPin)){
+    etat = 1;
+  }
+  if(etat == 1){
+    tournerDroit();
 
+  }
+  if(bumperArr){
+    etat=2;
+  }
+  if(etat==2){
+    
+    directionAller();
+  }
   
   //Si (verifieMur && Direction = NORD && LastDirection != EST)
     //Verifie limite

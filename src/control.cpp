@@ -24,38 +24,32 @@ int pos_y = 0;
 int pos_x = 0;
 
 void avance(float vitessedroit, float vitessegauche){
-    etat = 0;
   MOTOR_SetSpeed(RIGHT,vitessedroit);
   MOTOR_SetSpeed(LEFT, vitessegauche);
 };
 
 void recule(float vitessedroit, float vitessegauche){
-    etat = 1;
   MOTOR_SetSpeed(RIGHT, -vitessedroit);
   MOTOR_SetSpeed(LEFT, -vitessegauche);
 }
 
 void tournerGauche(){
-    etat = 2;
   MOTOR_SetSpeed(RIGHT, -0.5*vitesseDroite);
   MOTOR_SetSpeed(LEFT, 0.5*vitesseGauche);
 }
 
 void tournerDroit(){
-    etat = 2;
   MOTOR_SetSpeed(RIGHT, 0.5*vitesseDroite);
   MOTOR_SetSpeed(LEFT, -0.5*vitesseGauche);
 }
 
 void arret(){
-    etat = 3;
   MOTOR_SetSpeed(RIGHT, 0);
   MOTOR_SetSpeed(LEFT, 0);
 };
 
 void tournerSelonAngle(int angle){
     arret();
-    etat = 2;
     delay(300);
     ENCODER_ReadReset(RIGHT);
   float distanceParDegree = (DISTANCEENTREROUES * pi) /360;
@@ -238,7 +232,7 @@ void directionAller(){
         direction = tournerDansDirection(direction, tabDirection[i]);
         Serial.print("Direction apres tournerDansDirection: ");
         Serial.println(direction);
-                if(verifierMur()){
+                if(!verifierMur()){
             avancerDistance(50);
             ajusterPositionRobot(direction);
             i=4; // on Sort de la boucle
