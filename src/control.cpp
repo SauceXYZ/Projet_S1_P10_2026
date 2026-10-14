@@ -87,7 +87,6 @@ void tournerSelonAngle(int angle, int cote){
 
 
 char tournerDansDirection(char directionActuelle, char directionVoulue){
-    printf("Direction actuelle : %c",directionActuelle);
     switch(directionActuelle){
         case 'N':
             switch(directionVoulue){

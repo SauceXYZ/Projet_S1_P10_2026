@@ -45,6 +45,7 @@ void loop() {
     etat = 1;
   }
   if(bumperArr){
+    Serial.println("Etat: Reculer");
     etat = 2;
   }
 
