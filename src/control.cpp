@@ -22,6 +22,7 @@ int etat = 0;           // 0=avancer, 1=reculer, 2=tourner, 3=stop
 char direction = 'N';   // N = Nord, E = Est, S = Sud, O = Ouest
 int pos_y = 0;
 int pos_x = 0;
+int anciennePosition[2] = {1,5};
 
 void avance(float vitessedroit, float vitessegauche){
   MOTOR_SetSpeed(RIGHT,vitessedroit);
@@ -180,6 +181,8 @@ void avancerDistance(float distance){
 }
 
 void ajusterPositionRobot(char direction){
+    anciennePosition[0] = pos_x;
+    anciennePosition[1] = pos_y;
     switch(direction){
         case 'N':
             pos_y--;
@@ -201,6 +204,10 @@ void directionAller(){
     Serial.print("Position actuelle : (");
     Serial.print(pos_x);
     possibiliteTape(pos_x, pos_y);
+    enleverAncienneCase(pos_x, pos_y, anciennePosition[0], anciennePosition[1]);
+    if(possibilite[0] == 0 && possibilite[1] == 0 && possibilite[2] == 0 && possibilite[3] == 0){
+        remettreAncienneCase(pos_x, pos_y, anciennePosition[0], anciennePosition[1]);
+    } 
     if(pos_y==0){
       arret();
     } else {

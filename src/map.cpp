@@ -60,5 +60,33 @@ void possibiliteTape(int x, int y){
     }
 }
 
+//3 Nord
+//2 Droite - Est
+//1 Sud
+//0 Gauche - Ouest
+void enleverAncienneCase(int posX, int posY, int AncX, int AncY){
+    if(posX > AncX){
+        possibilite[2] = 0;
+    } else if(posX < AncX){
+        possibilite[0] = 0;
+    } else if(posY > AncY){
+        possibilite[1] = 0;
+    } else if(posY < AncY){
+        possibilite[3] = 0;
+    }
+}
+
+void remettreAncienneCase(int posX, int posY, int AncX, int AncY){
+    if(posX > AncX){
+        possibilite[2] = 1;
+    } else if(posX < AncX){
+        possibilite[0] = 1;
+    } else if(posY > AncY){
+        possibilite[1] = 1;
+    } else if(posY < AncY){
+        possibilite[3] = 1;
+    }
+}
+
 
 
