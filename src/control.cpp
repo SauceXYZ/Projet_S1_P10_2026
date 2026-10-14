@@ -49,7 +49,7 @@ void arret(){
   MOTOR_SetSpeed(LEFT, 0);
 };
 
-void tournerSelonAngle(int angle){
+void tournerSelonAngle(int angle, int cote){
     arret();
     delay(300);
     ENCODER_ReadReset(RIGHT);
@@ -57,6 +57,7 @@ void tournerSelonAngle(int angle){
   float distance = distanceParDegree * abs(angle);
   float pulses_requis = (distance * CLICPARTOUR) / (pi * DIAMETREROUE);
   float pulses_deplace = 0;
+  if(cote ==0){
   while(pulses_deplace < pulses_requis){
     if(angle > 0){
         tournerDroit();
@@ -68,7 +69,19 @@ void tournerSelonAngle(int angle){
   }
   pulses_deplace = 0;
   arret();
-}
+}else if(cote == 1){
+  while(pulses_deplace < pulses_requis){
+    if(angle > 0){
+        tournerGauche();
+    } else {
+        tournerDroit();
+    }
+    delay(50);
+    pulses_deplace = abs(ENCODER_Read(LEFT));
+  }
+  pulses_deplace = 0;
+  arret();
+}}
 
 
 
@@ -82,17 +95,17 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
                     return 'N';
                 case 'E':
                 {
-                    tournerSelonAngle(-90);
+                    tournerSelonAngle(90, 0);
                     return 'E';
                 }
                 case 'S':
                 {
-                    tournerSelonAngle(180);
+                    tournerSelonAngle(180, 0);
                     return 'S';
                 }
                 case 'O':
                 {
-                    tournerSelonAngle(90);
+                    tournerSelonAngle(90, 1);
                     return 'O';
                 }
             }
@@ -100,19 +113,19 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
             switch(directionVoulue){
                 case 'N':
                 {
-                    tournerSelonAngle(90);
+                    tournerSelonAngle(90, 1);
                     return 'N';
                 }
                 case 'E':
                     return 'E';
                 case 'S':
                 {
-                    tournerSelonAngle(-90);
+                    tournerSelonAngle(90, 0);
                     return 'S';
                 }
                 case 'O':
                 {
-                    tournerSelonAngle(180);
+                    tournerSelonAngle(180, 1);
                     return 'O';
                 }
             }
@@ -120,19 +133,19 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
             switch(directionVoulue){
                 case 'N':
                 {
-                    tournerSelonAngle(180);
+                    tournerSelonAngle(180, 0);
                     return 'N';
                 }
                 case 'E':
                 {
-                    tournerSelonAngle(90);
+                    tournerSelonAngle(90, 1);
                     return 'E';
                 }
                 case 'S':
                     return 'S';
                 case 'O':
                 {
-                    tournerSelonAngle(-90);
+                    tournerSelonAngle(90, 0);
                     return 'O';
                 }
             }
@@ -140,17 +153,17 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
             switch(directionVoulue){
                 case 'N':
                 {
-                    tournerSelonAngle(-90);
+                    tournerSelonAngle(90, 0);
                     return 'N';
                 }
                 case 'E':
                 {
-                    tournerSelonAngle(180);
+                    tournerSelonAngle(180, 0);
                     return 'E';
                 }
                 case 'S':
                 {
-                    tournerSelonAngle(90);
+                    tournerSelonAngle(90, 1);
                     return 'S';
                 }
                 case 'O':
@@ -161,7 +174,7 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
 }
 
 void avancerDistance(float distance){
-    const int pulseParTour = 3000;
+    const int pulseParTour = 2700;
     const float pulses_requis = (distance * pulseParTour) / (pi * DIAMETREROUE);
     float pulses_deplace = 0.0f;
 
