@@ -18,6 +18,7 @@ Date: 08/10/2026
 
 void setup(){
   BoardInit();
+  Serial.begin(9600);
   
   //initialisation des SENSORS
   pinMode(vertPin, INPUT);
@@ -32,6 +33,8 @@ void setup(){
   beep(3);
 }
 
+
+
 void loop() {
   //Assigner les valeurs au BUMPERS
   bumperArr = ROBUS_IsBumper(3);
@@ -41,15 +44,13 @@ void loop() {
   if(digitalRead(siffletPin)){
     etat = 1;
   }
+  if(bumperArr){
+    etat = 2;
+  }
+
   if(etat == 1){
     tournerDroit();
-
-  }
-  if(bumperArr){
-    etat=2;
-  }
-  if(etat==2){
-    
+  } else if(etat == 2){
     directionAller();
   }
   
@@ -72,7 +73,6 @@ void loop() {
   //Sinon
     //Avance 50cm
     //LastDirection == NORD
-
+  delay(50);
 }
-
 

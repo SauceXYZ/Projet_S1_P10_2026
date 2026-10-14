@@ -8,8 +8,8 @@ extern const float DISTANCEENTREROUES;
 extern const int PULSEATTENDUDROIT;
 extern const int PULSEATTENDUGAUCHE;
 
-extern int compteurTotaleDroit;
-extern int compteurTotaleGauche;
+extern long compteurTotaleDroit;
+extern long compteurTotaleGauche;
 extern float vitesseDroite;
 extern float vitesseGauche;
 extern float pulseParSeconde;

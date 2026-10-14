@@ -69,25 +69,7 @@ void tournerSelonAngle(int angle){
   arret();
 }
 void tournerSelonAngleChat(int angle) {
-arret();
-    delay(200);
-
-    int angleAbs = abs(angle) * 1800;
-
-    // Temps pour tourner l'angle demandé
-    int tempsRotation = (angleAbs) / 360;
-
-    if (angle > 0) {
-        // Tourner à droite
-        tournerDroit();
-    } else {
-        // Tourner à gauche
-        tournerGauche();
-    }
-
-    delay(tempsRotation);
-
-    arret();
+    tournerSelonAngle(angle);
 }
 
 
@@ -181,20 +163,18 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
 }
 
 void avancerDistance(float distance){
-    int pulseParTour = 2700;
-    
-    // On utilise "long" pour les pulses car ce sont de grands nombres entiers
-    float pulses_requis =  ((distance * pulseParTour) / (pi * DIAMETREROUE));
-    float pulses_deplace = 0;
+    const int pulseParTour = 2700;
+    const float pulses_requis = (distance * pulseParTour) / (pi * DIAMETREROUE);
+    float pulses_deplace = 0.0f;
 
-    while(pulses_deplace < pulses_requis){
-        //avancerDroitPID();
+    ENCODER_Reset(RIGHT);
+    ENCODER_Reset(LEFT);
+
+    while (pulses_deplace < pulses_requis) {
         pid(50);
-        delay(50);
-        pulses_deplace += ENCODER_Read(RIGHT);
-
+        pulses_deplace += abs(ENCODER_ReadReset(RIGHT));
     }
-    
+
     arret();
 }
 
@@ -215,31 +195,29 @@ void ajusterPositionRobot(char direction){
     }
 }
 
+
 void directionAller(){
+    Serial.print("Position actuelle : (");
+    Serial.print(pos_x);
     possibiliteTape(pos_x, pos_y);
     if(pos_y==0){
       arret();
-    }
-    char tabDirection[4] = {'N', 'E', 'S', 'O'};
-    Serial.print("Possibilite: ");
-          Serial.print(possibilite[0]);
-          Serial.print(possibilite[1]);
-          Serial.print(possibilite[2]);
-          Serial.println(possibilite[3]);
-    for(int i = 0; i < 4; i++){
-        if(possibilite[i] == 1){
+    } else {
+        char tabDirection[4] = {'N', 'E', 'S', 'O'};
+        for(int i = 0; i < 4; i++){
+            if(possibilite[i] == 1){
           
-        direction = tournerDansDirection(direction, tabDirection[i]);
-        Serial.print("Direction apres tournerDansDirection: ");
-        Serial.println(direction);
+                direction = tournerDansDirection(direction, tabDirection[i]);
                 if(!verifierMur()){
-            avancerDistance(50);
-            ajusterPositionRobot(direction);
-            i=4; // on Sort de la boucle
-        } else {
-            possibilite[i] = 0;
-        }
-        }
+                    avancerDistance(50);
+                    ajusterPositionRobot(direction);
+                    i=4; // on Sort de la boucle
+                } else {
+                    possibilite[i] = 0;
+                }
+            }
         
+        }
     }
+    
 }
