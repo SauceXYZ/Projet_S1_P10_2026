@@ -22,7 +22,7 @@ int etat = 0;           // 0=avancer, 1=reculer, 2=tourner, 3=stop
 char direction = 'N';   // N = Nord, E = Est, S = Sud, O = Ouest
 int pos_y = 0;
 int pos_x = 0;
-int anciennePosition[2] = {1,5};
+int anciennePosition[2] = {1,9};
 
 void avance(float vitessedroit, float vitessegauche){
   MOTOR_SetSpeed(RIGHT,vitessedroit);
@@ -52,36 +52,34 @@ void arret(){
 void tournerSelonAngle(int angle, int cote){
     arret();
     delay(300);
-    ENCODER_ReadReset(RIGHT);
-  float distanceParDegree = (DISTANCEENTREROUES * pi) /360;
-  float distance = distanceParDegree * abs(angle);
-  float pulses_requis = (distance * CLICPARTOUR) / (pi * DIAMETREROUE);
-  float pulses_deplace = 0;
-  if(cote ==0){
-  while(pulses_deplace < pulses_requis){
-    if(angle > 0){
-        tournerDroit();
-    } else {
-        tournerGauche();
+    ENCODER_Reset(RIGHT);
+    ENCODER_Reset(LEFT);
+
+    const float distanceParDegree = (DISTANCEENTREROUES * pi) / 360.0f;
+    const float distance = distanceParDegree * abs(angle);
+    const float pulsesRequis = (distance * CLICPARTOUR) / (pi * DIAMETREROUE);
+    float pulsesDeplaces = 0.0f;
+
+    while (pulsesDeplaces < pulsesRequis) {
+        if (cote == 0) {
+            angle > 0 ? tournerDroit() : tournerGauche();
+        } else if (cote == 1) {
+            angle > 0 ? tournerGauche() : tournerDroit();
+        } else {
+            arret();
+            return;
+        }
+
+        delay(50);
+        long pulsesDroite = ENCODER_ReadReset(RIGHT);
+        long pulsesGauche = ENCODER_ReadReset(LEFT);
+        if (pulsesDroite < 0) pulsesDroite = -pulsesDroite;
+        if (pulsesGauche < 0) pulsesGauche = -pulsesGauche;
+        pulsesDeplaces += (pulsesDroite + pulsesGauche) / 2.0f;
     }
-    delay(50);
-    pulses_deplace = abs(ENCODER_Read(RIGHT));
-  }
-  pulses_deplace = 0;
-  arret();
-}else if(cote == 1){
-  while(pulses_deplace < pulses_requis){
-    if(angle > 0){
-        tournerGauche();
-    } else {
-        tournerDroit();
-    }
-    delay(50);
-    pulses_deplace = abs(ENCODER_Read(LEFT));
-  }
-  pulses_deplace = 0;
-  arret();
-}}
+
+    arret();
+}
 
 
 
@@ -99,7 +97,8 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
                 }
                 case 'S':
                 {
-                    tournerSelonAngle(180, 0);
+                    tournerSelonAngle(90, 0);
+                    tournerSelonAngle(90, 0);
                     return 'S';
                 }
                 case 'O':
@@ -124,7 +123,8 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
                 }
                 case 'O':
                 {
-                    tournerSelonAngle(180, 1);
+                    tournerSelonAngle(90, 1);
+                    tournerSelonAngle(90, 1);
                     return 'O';
                 }
             }
@@ -132,7 +132,8 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
             switch(directionVoulue){
                 case 'N':
                 {
-                    tournerSelonAngle(180, 0);
+                    tournerSelonAngle(90, 0);
+                    tournerSelonAngle(90, 0);
                     return 'N';
                 }
                 case 'E':
@@ -157,7 +158,8 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
                 }
                 case 'E':
                 {
-                    tournerSelonAngle(180, 0);
+                    tournerSelonAngle(90, 0);
+                    tournerSelonAngle(90, 0);
                     return 'E';
                 }
                 case 'S':
@@ -173,7 +175,7 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
 }
 
 void avancerDistance(float distance){
-    const int pulseParTour = 2700;
+    const int pulseParTour = 3000;
     const float pulses_requis = (distance * pulseParTour) / (pi * DIAMETREROUE);
     float pulses_deplace = 0.0f;
 

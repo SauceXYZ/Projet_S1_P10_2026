@@ -17,7 +17,7 @@ Date: 13/10/2026
 #include "sensor.h"
 
 //Constantes moteur & robot
-const int CLICPARTOUR = 3000;
+const int CLICPARTOUR = 3200;
 const float DIAMETREROUE = 7.62; // en cm
 const float DISTANCEENTREROUES = 17.2; // en cm
 const int PULSEATTENDUDROIT = 2300;
@@ -38,7 +38,7 @@ static float clampVitesse(float valeur) {
 
 void pid(int delai){
     const float KP = 0.0005f;
-    const float GAUCHE_TRIM = 0.015f;
+    const float GAUCHE_TRIM = 0.01f;
 
     const long compteurDroit = ENCODER_ReadReset(1);
     const long compteurGauche = ENCODER_ReadReset(LEFT);

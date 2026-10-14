@@ -13,8 +13,7 @@ void tournerGauche();
 void tournerDroit();
 void arret();
 
-void tournerSelonAngle(int angle);
-void tournerSelonAngleChat(int angle);
+void tournerSelonAngle(int angle, int cote);
 
 char tournerDansDirection(char directionActuelle, char directionVoulue);
 

@@ -26,7 +26,7 @@ void setup(){
   pinMode(siffletPin, INPUT);
 
   pos_x = 1;
-  pos_y = 5;
+  pos_y = 9;
 
   //Fin de l'initialisation
   delay(100);

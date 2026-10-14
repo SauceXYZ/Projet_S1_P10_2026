@@ -65,26 +65,38 @@ void possibiliteTape(int x, int y){
 //1 Sud
 //0 Gauche - Ouest
 void enleverAncienneCase(int posX, int posY, int AncX, int AncY){
+    Serial.print("Ancienne position: (");
+    Serial.print(AncX);
+    Serial.print(", ");
+    Serial.print(AncY);
+    Serial.println(")");
     if(posX > AncX){
-        possibilite[2] = 0;
-    } else if(posX < AncX){
+        Serial.println("Enlever case: Ouest");
         possibilite[0] = 0;
+    } else if(posX < AncX){
+        Serial.println("Enlever case: Est");
+
+        possibilite[2] = 0;
     } else if(posY > AncY){
-        possibilite[1] = 0;
-    } else if(posY < AncY){
+        Serial.println("Enlever case: Nord");
+
         possibilite[3] = 0;
+    } else if(posY < AncY){
+        Serial.println("Enlever case: Sud");
+
+        possibilite[1] = 0;
     }
 }
 
 void remettreAncienneCase(int posX, int posY, int AncX, int AncY){
     if(posX > AncX){
-        possibilite[2] = 1;
-    } else if(posX < AncX){
         possibilite[0] = 1;
+    } else if(posX < AncX){
+        possibilite[2] = 1;
     } else if(posY > AncY){
-        possibilite[1] = 1;
-    } else if(posY < AncY){
         possibilite[3] = 1;
+    } else if(posY < AncY){
+        possibilite[1] = 1;
     }
 }
 
