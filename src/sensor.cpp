@@ -23,8 +23,8 @@ bool bumperGch=false;
 bool bumperDrt=false;
 
 //Initialisation des capteurs
-bool vert = false;
-bool rouge = false;
+bool proxVert = false;
+bool proxRouge = false;
 bool sifflet = false;
 
 
@@ -37,3 +37,15 @@ void beep(int count){
   }
   delay(400);
 }
+
+bool verifierMur(){
+    proxVert = digitalRead(vertPin);
+    proxRouge= digitalRead(rougePin);
+    if(!proxVert && !proxRouge){
+        return true;
+    } else {
+        return false;
+    }
+
+}
+

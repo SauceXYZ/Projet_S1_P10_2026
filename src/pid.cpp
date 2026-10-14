@@ -25,8 +25,9 @@ const int PULSEATTENDUGAUCHE = 2300;
 
 int compteurTotaleDroit = 0;
 int compteurTotaleGauche = 0;
-float vitesseDroite = 0.50;
-float vitesseGauche = 0.59;
+float vitesseBase = 0.20;
+float vitesseDroite = 0.20;
+float vitesseGauche = 0.20;
 float pulseParSeconde = 7.0;
 
 void pid(int delai){
@@ -34,14 +35,10 @@ void pid(int delai){
     float kGauche=0;  //Différence
     float kDroite=0;  //Différence
     float differenceK = 0;
-    float KP=0.0001; //Correction proportionnelle
+    float KP=0.00001; //Correction proportionnelle
     
     int compteurDroit = 0;
     int compteurGauche = 0;
-    //Serial.print("compteurDroit: ");
-    //Serial.println(ENCODER_Read(RIGHT));
-    //Serial.print("compteurGauche: ");
-    //Serial.println(ENCODER_Read(LEFT));
 
     compteurDroit = ENCODER_ReadReset(RIGHT);
     compteurGauche = ENCODER_ReadReset(LEFT);
@@ -50,24 +47,25 @@ void pid(int delai){
 
     differenceK = compteurDroit - compteurGauche;
 
-    if(differenceK > 100){
+    if(differenceK > 100 || differenceK < -100){
        if(differenceK > 0){
-      vitesseGauche += differenceK*KP/2;
-      vitesseDroite -= differenceK*KP/2;
-    }
-    else if(differenceK < 0){
+        vitesseGauche += differenceK*KP/2;
+        vitesseDroite -= differenceK*KP/2;
+      }
+      else if(differenceK < 0){
       vitesseDroite += -differenceK*KP/2;
       vitesseGauche -= -differenceK*KP/2;
-    }
-    } else {
+      }
+      } 
+      else {
       kDroite = pulseAttendu - compteurDroit;
-      vitesseDroite += kDroite*KP;
+      vitesseDroite = vitesseBase + kDroite*KP;
 
       kGauche = pulseAttendu - compteurGauche;
-      vitesseGauche += kGauche*KP;
+      vitesseGauche = vitesseBase + KP*kGauche;
     }
-    //printf("vitesseDroite: %f\n",vitesseDroite);
-    //printf("vitesseGauche: %f\n", vitesseGauche);
     
     avance(vitesseDroite, vitesseGauche);
+    delay(100);
+    
 };

@@ -15,5 +15,5 @@ extern float vitesseGauche;
 extern float pulseParSeconde;
 
 void pid(int delai);
-
+void pidChat(int delai);
 #endif

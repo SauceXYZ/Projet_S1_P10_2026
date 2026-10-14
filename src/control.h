@@ -14,6 +14,8 @@ void tournerDroit();
 void arret();
 
 void tournerSelonAngle(int angle);
+void tournerSelonAngleChat(int angle);
+
 char tournerDansDirection(char directionActuelle, char directionVoulue);
 
 void avancerDistance(float distance);

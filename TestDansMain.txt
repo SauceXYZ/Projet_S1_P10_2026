@@ -1,0 +1,18 @@
+//Fichier qui permettents de tester les fonctionalités  
+
+//Verifie le capteur et les interupteurs
+  if (verifierMur()){
+    beep(1);
+  }
+  if (bumperAva){
+    beep(2);
+  }
+  if (bumperArr){
+    beep(3);
+  } 
+  if(bumperDrt){
+    beep(4);
+  }
+  if(bumperGch){
+    beep(5);
+  } 

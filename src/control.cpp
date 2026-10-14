@@ -74,6 +74,29 @@ void tournerSelonAngle(int angle){
   pulses_deplace = 0;
   arret();
 }
+void tournerSelonAngleChat(int angle) {
+arret();
+    delay(200);
+
+    int angleAbs = abs(angle) * 1800;
+
+    // Temps pour tourner l'angle demandé
+    int tempsRotation = (angleAbs) / 360;
+
+    if (angle > 0) {
+        // Tourner à droite
+        tournerDroit();
+    } else {
+        // Tourner à gauche
+        tournerGauche();
+    }
+
+    delay(tempsRotation);
+
+    arret();
+}
+
+
 
 
 char tournerDansDirection(char directionActuelle, char directionVoulue){
@@ -181,16 +204,6 @@ void avancerDistance(float distance){
     arret();
 }
 
-bool verifierMur(){
-    vert = digitalRead(vertPin);
-    rouge = digitalRead(rougePin);
-    if(vert && rouge){
-        return true;
-    } else {
-        return false;
-    }
-}
-
 void ajusterPositionRobot(char direction){
     switch(direction){
         case 'N':
@@ -235,5 +248,4 @@ void directionAller(){
         }
         
     }
-    
 }
