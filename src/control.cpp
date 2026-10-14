@@ -160,7 +160,7 @@ char tournerDansDirection(char directionActuelle, char directionVoulue){
 }
 
 void avancerDistance(float distance){
-    const int pulseParTour = 2700;
+    const int pulseParTour = 3000;
     const float pulses_requis = (distance * pulseParTour) / (pi * DIAMETREROUE);
     float pulses_deplace = 0.0f;
 

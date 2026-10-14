@@ -28,7 +28,7 @@ Date: 13/10/2026
 //1 bloquer a gauche
 int possibilite[4] = {0, 0, 0, 0};
 
-int carre[3][10] = {
+int grilleMap[3][10] = {
     {13, 1, 5,1, 5,1, 5, 1, 5, 7},
     {13, 0, 5,0, 5,0, 5, 0, 5, 2},
     {13, 4, 5,4, 5,4, 5, 4, 5, 6}
@@ -41,19 +41,19 @@ void possibiliteTape(int x, int y){
     possibilite[1] = 0;
     possibilite[2] = 0;
     possibilite[3] = 0;
-    if((carre[x][y] & 8) == 0){
+    if((grilleMap[x][y] & 8) == 0){
         // avancer
         possibilite[0] = 1;
     }
-    if((carre[x][y] & 4) == 0){
+    if((grilleMap[x][y] & 4) == 0){
         // droite
         possibilite[1] = 1;
     }
-    if((carre[x][y] & 2) == 0){
+    if((grilleMap[x][y] & 2) == 0){
         // reculer
         possibilite[2] = 1;
     }
-    if((carre[x][y] & 1) == 0){
+    if((grilleMap[x][y] & 1) == 0){
         // gauche
         possibilite[3] = 1;
         

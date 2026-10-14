@@ -38,7 +38,7 @@ static float clampVitesse(float valeur) {
 
 void pid(int delai){
     const float KP = 0.0005f;
-    const float GAUCHE_TRIM = 0.02f;
+    const float GAUCHE_TRIM = 0.015f;
 
     const long compteurDroit = ENCODER_ReadReset(1);
     const long compteurGauche = ENCODER_ReadReset(LEFT);
