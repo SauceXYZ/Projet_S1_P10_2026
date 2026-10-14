@@ -68,9 +68,6 @@ void tournerSelonAngle(int angle){
   pulses_deplace = 0;
   arret();
 }
-void tournerSelonAngleChat(int angle) {
-    tournerSelonAngle(angle);
-}
 
 
 
@@ -167,12 +164,16 @@ void avancerDistance(float distance){
     const float pulses_requis = (distance * pulseParTour) / (pi * DIAMETREROUE);
     float pulses_deplace = 0.0f;
 
-    ENCODER_Reset(RIGHT);
+    ENCODER_Reset(1);
     ENCODER_Reset(LEFT);
 
     while (pulses_deplace < pulses_requis) {
+        Serial.print("Pulses requis: ");
+        Serial.print(pulses_requis);
+        Serial.print(" | Pulses deplace: ");
+        Serial.println(pulses_deplace);
         pid(50);
-        pulses_deplace += abs(ENCODER_ReadReset(RIGHT));
+        pulses_deplace += ENCODER_Read(1);
     }
 
     arret();
