@@ -88,7 +88,7 @@ void loop() {
   //   //Serial.println("Scan complete");
   // }
 
-  avanceV3();
+  //avanceV3();
 
   
 }

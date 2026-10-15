@@ -8,7 +8,7 @@
 #define AVANCE_V3_DEBUG 0
 #endif
 
-static int ligne = 9;
+static int ligne = 10;
 static int colomne = 1;
 
 // Tableau carte du parcours
@@ -19,9 +19,10 @@ static int colomne = 1;
 //2 bloquer en bas
 //1 bloquer a gauche
 
-char grilleMap[10][3] =
+char grilleMap[11][3] =
 {
-    {13, 15, 13},
+    {9, 15, 12},
+    {5, 15, 5},
     {1, 10, 4},
     {5, 15, 5},
     {1, 8, 4},
@@ -33,8 +34,9 @@ char grilleMap[10][3] =
     {3, 10, 6}
 };
 
-bool positionRobot[10][3] =
+bool positionRobot[11][3] =
 {
+    {false, false, false},
     {false, false, false},
     {false, false, false},
     {false, false, false},
@@ -281,7 +283,7 @@ static bool avanceImpulsions(int32_t distance, bool versCentre = false)
 int deplaceCase(void)
 {
     const float centreX = (colomne - 1) * CASE_CM;
-    const float centreY = (9 - ligne) * CASE_CM + CASE_CM / 2.0f;
+    const float centreY = (10 - ligne) * CASE_CM + CASE_CM / 2.0f;
     float distance_cm = CASE_CM;
     if (direction == FACE_AVANT) distance_cm = centreY + CASE_CM - lab_posy;
     else if (direction == FACE_ARRIERE) distance_cm = lab_posy - (centreY - CASE_CM);
@@ -478,12 +480,12 @@ sinon si objet en avant et impossible gauche droit
 */
 void avanceV3(void)
 {
-    static unsigned int visites[10][3] = {};
-    static bool impasses[10][3] = {};
+    static unsigned int visites[11][3] = {};
+    static bool impasses[11][3] = {};
     static bool debut = true;
     static bool termine = false;
     static bool retour = false;
-    static uint8_t chemin[30]; // Une case = ligne * 3 + colonne.
+    static uint8_t chemin[33];
     static int longueurChemin = 0;
     if (termine) return;
 
@@ -493,7 +495,7 @@ void avanceV3(void)
         chemin[0] = ligne * 3 + colomne;
         longueurChemin = 1;
         lab_posx = (colomne - 1) * CASE_CM;
-        lab_posy = (9 - ligne) * CASE_CM + CASE_CM / 2.0f;
+        lab_posy = (10 - ligne) * CASE_CM + CASE_CM / 2.0f;
         encodeur_1_precedent = ENCODER_Read(1);
         debut = false;
     }
@@ -567,12 +569,11 @@ void avanceV3(void)
     bool possibles[4] = {false, false, false, false};
     int sorties = 0;
 
-    // Lire la carte sans tourner : seules les directions utiles seront scannees.
     for (int i = 0; i < 4; i++)
     {
         int prochaineLigne = ligne + changementLigne[i];
         int prochaineColomne = colomne + changementColomne[i];
-        if (prochaineLigne < 0 || prochaineLigne >= 10 ||
+        if (prochaineLigne < 0 || prochaineLigne >= 11 ||
             prochaineColomne < 0 || prochaineColomne >= 3)
         {
             continue;
@@ -587,7 +588,6 @@ void avanceV3(void)
         sorties += 1;
     }
 
-    // Nord, cote le moins visite, autre cote, puis sud.
     int ordre[4] = {0, 1, 2, 3};
     if (possibles[1] && possibles[2] &&
         visites[ligne][colomne + 1] < visites[ligne][colomne - 1])
@@ -614,7 +614,7 @@ void avanceV3(void)
         if (vert && rouge)
         {
             choix = i;
-            break; // Ne pas tourner vers les autres passages si celui-ci convient.
+            break;
         }
         grilleMap[ligne][colomne] |= bits[i];
         grilleMap[prochaineLigne][prochaineColomne] |= bitsOpposes[i];
@@ -630,7 +630,6 @@ void avanceV3(void)
         return;
     }
 
-    // Une case avec une seule sortie deja visitee est une impasse.
     bool impasse = sorties == 1 &&
         visites[ligne + changementLigne[choix]][colomne + changementColomne[choix]] > 0;
 
@@ -655,7 +654,6 @@ void avanceV3(void)
             impasses[ancienneLigne][ancienneColomne] = true;
         }
         visites[ligne][colomne] += 1;
-        // Si une case est revisitee, enlever la boucle et les detours du chemin.
         int caseActuelle = ligne * 3 + colomne;
         int indice = 0;
         while (indice < longueurChemin && chemin[indice] != caseActuelle)
@@ -728,7 +726,6 @@ void avanceV3(void)
 //     return;
 // }
 
-// Ordre des orientations pour une rotation vers la droite.
 static const int orientations[] = {FACE_AVANT, FACE_DROIT, FACE_ARRIERE, FACE_GAUCHE};
 
 static int indiceOrientation(int orientation)
@@ -745,7 +742,7 @@ void faitFace(int orientation)
     const int depart = indiceOrientation(direction);
     const int arrivee = indiceOrientation(orientation);
     if (depart < 0 || arrivee < 0 || depart == arrivee) return;
-
+    delay(150);
     const int quartsDeTour = (arrivee - depart + 4) % 4;
     if (quartsDeTour == 3)
     {
@@ -756,6 +753,7 @@ void faitFace(int orientation)
         pid_tourne(TOURNE_DROITE, quartsDeTour * 90);
     }
     direction = orientation;
+    delay(250);
 }
 
 void tourne(int directionDemande)

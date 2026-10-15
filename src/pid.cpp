@@ -6,7 +6,7 @@
 
 const float vitesseReference = 0.5f;
 const unsigned long periodeMs = 50;
-const float accelerationAvance = 0.6f; // Commande moteur par seconde.
+const float accelerationAvance = 0.6f;
 float commandeGauchePrecedente = 0.0f;
 float commandeDroitePrecedente = 0.0f;
 const float Kp = 0.00015f;
@@ -72,7 +72,6 @@ void pid_avance(float vitesseCible)
     const unsigned long tempsPresent = millis();
     const unsigned long tempsEcoule = tempsPresent - tempsPrecedent;
 
-    //Temps minimum entre calcule de pid
     if (tempsEcoule < periodeMs) return;
 
     const int32_t encodeurGauche = ENCODER_Read(0);
