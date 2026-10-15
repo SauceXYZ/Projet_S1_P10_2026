@@ -188,7 +188,7 @@ int checkBoundary(void)
     return 0;
 }
 
-static bool avanceImpulsions(int32_t distance, bool versCentre = false)
+static bool avanceImpulsions(int32_t distance, bool versCentre = false, bool finDeCase = false)
 {
     const int32_t debut = ENCODER_Read(1);
     if (AVANCE_V3_DEBUG)
@@ -204,7 +204,7 @@ static bool avanceImpulsions(int32_t distance, bool versCentre = false)
     }
     const int32_t debut0 = ENCODER_Read(0);
     pid_init();
-    bool obstacleFinCase = false;
+    bool obstacleFinCase = finDeCase;
     bool freinageAnticipe = false;
     float anticipation_cm = 0.0f;
     while (ENCODER_Read(1) - debut < distance)
@@ -294,7 +294,26 @@ int deplaceCase(void)
     const int32_t distance = (int32_t)(distance_cm * (1.0f / CM_PAR_IMPULSION_1));
     const int32_t debut = ENCODER_Read(1);
     bool complete = avanceImpulsions(distance, true);
-    const int32_t parcouru = ENCODER_Read(1) - debut;
+    int32_t parcouru = ENCODER_Read(1) - debut;
+    // La rampe a pu faire entrer le robot dans la case apres la detection.
+    float restant_cm = (distance - parcouru) * CM_PAR_IMPULSION_1;
+    if (!complete && restant_cm <= TOLERANCE_CASE_CM)
+    {
+        if (AVANCE_V3_DEBUG || CALIBRATION_DEBUG)
+        {
+            Serial.print("Reprise apres freinage vers le centre, reste_cm=");
+            Serial.println(restant_cm, 3);
+        }
+        if (distance > parcouru)
+        {
+            complete = avanceImpulsions(distance - parcouru, true, true);
+        }
+        else
+        {
+            complete = true; // Le freinage a deja atteint ou depasse le centre.
+        }
+        parcouru = ENCODER_Read(1) - debut;
+    }
     if (!complete)
     {
         if (AVANCE_V3_DEBUG) Serial.println("Deplacement interrompu: retour a la case precedente");
@@ -485,15 +504,11 @@ void avanceV3(void)
     static bool debut = true;
     static bool termine = false;
     static bool retour = false;
-    static uint8_t chemin[33];
-    static int longueurChemin = 0;
     if (termine) return;
 
     if (debut)
     {
         visites[ligne][colomne] = 1;
-        chemin[0] = ligne * 3 + colomne;
-        longueurChemin = 1;
         lab_posx = (colomne - 1) * CASE_CM;
         lab_posy = (10 - ligne) * CASE_CM + CASE_CM / 2.0f;
         encodeur_1_precedent = ENCODER_Read(1);
@@ -501,7 +516,7 @@ void avanceV3(void)
     }
     if (retour)
     {
-        if (longueurChemin <= 1)
+        if (ligne == 10)
         {
             MOTOR_SetSpeed(0, 0);
             MOTOR_SetSpeed(1, 0);
@@ -509,34 +524,33 @@ void avanceV3(void)
             termine = true;
             return;
         }
-        int prochaineLigne = chemin[longueurChemin - 2] / 3;
-        int prochaineColomne = chemin[longueurChemin - 2] % 3;
-        if (AVANCE_V3_DEBUG)
-        {
-            Serial.print("Retour vers ligne "); Serial.print(prochaineLigne);
-            Serial.print(" | colonne "); Serial.println(prochaineColomne);
-        }
-        if (prochaineLigne < ligne) faitFace(FACE_AVANT);
-        else if (prochaineLigne > ligne) faitFace(FACE_ARRIERE);
-        else if (prochaineColomne < colomne) faitFace(FACE_GAUCHE);
-        else faitFace(FACE_DROIT);
+        // Retour dans la colonne centrale, sans consulter la carte des rubans.
+        faitFace(FACE_ARRIERE);
         delay(100);
-
-        if (deplaceCase() == 1)
-        {
-            longueurChemin -= 1;
-        }
-        else
+        if (deplaceCase() != 1)
         {
             MOTOR_SetSpeed(0, 0);
             MOTOR_SetSpeed(1, 0);
-            if (AVANCE_V3_DEBUG) Serial.println("Retour bloque sur le chemin memorise");
+            if (AVANCE_V3_DEBUG) Serial.println("Retour direct bloque par un obstacle");
             termine = true;
         }
         return;
     }
     if (ligne == 0)
     {
+        // Rejoindre (0, 1) avant l'arret final ou le retour direct.
+        if (colomne != 1)
+        {
+            if (colomne == 0) faitFace(FACE_DROIT);
+            else faitFace(FACE_GAUCHE);
+            delay(100);
+            if (deplaceCase() != 1)
+            {
+                if (AVANCE_V3_DEBUG) Serial.println("Acces a la case (0,1) bloque");
+                termine = true;
+            }
+            return;
+        }
         MOTOR_SetSpeed(0, 0);
         MOTOR_SetSpeed(1, 0);
         if (AVANCE_V3_DEBUG) Serial.println("Arrivee atteinte");
@@ -654,14 +668,7 @@ void avanceV3(void)
             impasses[ancienneLigne][ancienneColomne] = true;
         }
         visites[ligne][colomne] += 1;
-        int caseActuelle = ligne * 3 + colomne;
-        int indice = 0;
-        while (indice < longueurChemin && chemin[indice] != caseActuelle)
-        {
-            indice += 1;
-        }
-        chemin[indice] = caseActuelle;
-        longueurChemin = indice + 1;
+
     }
     else if (resultat == 0)
     {
@@ -753,7 +760,7 @@ void faitFace(int orientation)
         pid_tourne(TOURNE_DROITE, quartsDeTour * 90);
     }
     direction = orientation;
-    delay(250);
+    delay(500);
 }
 
 void tourne(int directionDemande)
