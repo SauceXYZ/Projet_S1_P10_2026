@@ -30,6 +30,10 @@ float lab_posy = 0;
 
 int direction = FACE_AVANT;
 
+float y_total = 500.0f;
+float x_total_max = 75.0f;
+float x_total_min = -75.0f;
+
 /*
 Vos propres fonctions sont creees ici
 */
@@ -55,7 +59,23 @@ void setup(){
 
   attendSifflet();
   Serial.println("Sifflet detecter");
-  delay(100);
+  // delay(100);
+  // pid_tourne(TOURNE_GAUCHE, 90);
+  // delay(500);
+  // pid_tourne(TOURNE_GAUCHE, 90);
+  // delay(500);
+  // pid_tourne(TOURNE_GAUCHE, 90);
+  // delay(500);
+  // pid_tourne(TOURNE_GAUCHE, 90);
+  // attendSifflet();
+  // pid_tourne(TOURNE_DROITE, 90);
+  // delay(500);
+  // pid_tourne(TOURNE_DROITE, 90);
+  // delay(500);
+  // pid_tourne(TOURNE_DROITE, 90);
+  // delay(500);
+  // pid_tourne(TOURNE_DROITE, 90);
+
 }
 
 /*
@@ -63,10 +83,12 @@ Fonctions de boucle infini
  -> Se fait appeler perpetuellement suite au "setup"
 */
 void loop() {
-  if(avance() == 1) {
-    scan();
-    //Serial.println("Scan complete");
-  }
+  // if(avance() == 1) {
+  //   scan();
+  //   //Serial.println("Scan complete");
+  // }
+
+  avanceV3();
 
   
 }

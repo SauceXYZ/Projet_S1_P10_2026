@@ -6,8 +6,11 @@
 
 const float vitesseReference = 0.5f;
 const unsigned long periodeMs = 50;
+const float accelerationAvance = 0.6f; // Commande moteur par seconde.
+float commandeGauchePrecedente = 0.0f;
+float commandeDroitePrecedente = 0.0f;
 const float Kp = 0.00015f;
-const float Ki = 0.0001f;
+const float Ki = 0.00012f;
 const float Kd = 0.000005f;
 const float tempsFiltreDerivee = 0.1f;
 float erreurPrecedente = 0.0f;
@@ -18,21 +21,49 @@ unsigned long tempsPrecedent = 0;
 int32_t encodeurGauchePrecedent = 0;
 int32_t encodeurDroitPrecedent = 0;
 bool initialise = false;
+static float vitesseDroiteCmS = 0.0f;
+
+struct MesureDemarrage
+{
+    unsigned long tempsMs;
+    int32_t pulses0;
+    int32_t pulses1;
+    float commande0;
+    float commande1;
+    float erreurVitesse;
+    float facteurRampe;
+};
+static MesureDemarrage mesuresDemarrage[20];
+static int nombreMesuresDemarrage = 0;
+static unsigned long debutAvanceMs = 0;
+static int32_t debutAvance0 = 0;
+static int32_t debutAvance1 = 0;
 
 
 void pid_init(void)
 {
-    correctionIntegrale = 0.0f;
+    commandeGauchePrecedente = 0.0f;
+    commandeDroitePrecedente = 0.0f;
+    vitesseDroiteCmS = 0.0f;
     erreurPrecedente = 0.0f;
     deriveeFiltree = 0.0f;
     erreurPrecedenteValide = false;
     encodeurGauchePrecedent = ENCODER_Read(0);
     encodeurDroitPrecedent = ENCODER_Read(1);
     tempsPrecedent = millis();
+    debutAvanceMs = tempsPrecedent;
+    debutAvance0 = encodeurGauchePrecedent;
+    debutAvance1 = encodeurDroitPrecedent;
+    nombreMesuresDemarrage = 0;
     initialise = true;
 }
 //source : https://www.teachmemicro.com/arduino-pid-control-tutorial/
 void pid_avance(void)
+{
+    pid_avance(vitesseReference);
+}
+
+void pid_avance(float vitesseCible)
 {
     if (!initialise) {
         pid_init();
@@ -48,14 +79,19 @@ void pid_avance(void)
     const int32_t encodeurDroit = ENCODER_Read(1);
 
     const float dt = tempsEcoule / 1000.0f;
+    float dtRampe = dt;
+    if (dtRampe > 0.1f) dtRampe = 0.1f;
+    const float variationMax = accelerationAvance * dtRampe;
+    if (vitesseCible < 0.0f) vitesseCible = 0.0f;
+    if (vitesseCible > vitesseReference) vitesseCible = vitesseReference;
+    float commandeGauche = vitesseCible;
 
-    //Calcule de la vitesse (en pulse par seconde)
-    const float vitesseGauche = (encodeurGauche - encodeurGauchePrecedent) / dt;
-    const float vitesseDroite = (encodeurDroit - encodeurDroitPrecedent) / dt;
+    const float vitesseGauche = (encodeurGauche - encodeurGauchePrecedent) * COEFF_DISTANCE_0 / dt;
+    const float vitesseDroite = (encodeurDroit - encodeurDroitPrecedent) * COEFF_DISTANCE_1 / dt;
 
+    vitesseDroiteCmS = (encodeurDroit - encodeurDroitPrecedent) * CM_PAR_IMPULSION_1 / dt;
     const float erreur = vitesseGauche - vitesseDroite;
 
-    // calcule de proportionel seulement car faire une derrive cause un spike qui fait que le robot ne va pas droit au depart
     if (erreurPrecedenteValide) {
         const float derivee = (erreur - erreurPrecedente) / dt;
         const float alpha = dt / (tempsFiltreDerivee + dt);
@@ -66,23 +102,51 @@ void pid_avance(void)
     const float correctionDerivee = Kd * deriveeFiltree;
 
     const float integraleCandidate = correctionIntegrale + Ki * erreur * dt;
-    const float commandeCandidate = vitesseReference + Kp * erreur + integraleCandidate + correctionDerivee;
-    if ((commandeCandidate >= 0.0f && commandeCandidate <= 1.0f) ||
-        (commandeCandidate > 1.0f && erreur < 0.0f) ||
-        (commandeCandidate < 0.0f && erreur > 0.0f)) {
+    const float commandeCandidate = commandeGauche + Kp * erreur + integraleCandidate + correctionDerivee;
+    if (vitesseCible > 0.0f &&
+        ((commandeCandidate >= 0.0f && commandeCandidate <= 1.0f) ||
+         (commandeCandidate > 1.0f && erreur < 0.0f) ||
+         (commandeCandidate < 0.0f && erreur > 0.0f))) {
         correctionIntegrale = integraleCandidate;
     }
-    float commandeDroite = vitesseReference + Kp * erreur + correctionIntegrale + correctionDerivee;
+    float commandeDroite = commandeGauche + Kp * erreur + correctionIntegrale + correctionDerivee;
 
     if (commandeDroite > 1.0f) commandeDroite = 1.0f;
     if (commandeDroite < 0.0f) commandeDroite = 0.0f;
 
-    MOTOR_SetSpeed(0, vitesseReference);
+    if (vitesseCible == 0.0f) commandeDroite = 0.0f;
+
+
+    const float changement0 = commandeGauche - commandeGauchePrecedente;
+    const float changement1 = commandeDroite - commandeDroitePrecedente;
+    const float amplitude0 = changement0 < 0.0f ? -changement0 : changement0;
+    const float amplitude1 = changement1 < 0.0f ? -changement1 : changement1;
+    float amplitudeMax = amplitude0;
+    if (amplitude1 > amplitudeMax) amplitudeMax = amplitude1;
+    float facteurRampe = 1.0f;
+    if (amplitudeMax > variationMax) facteurRampe = variationMax / amplitudeMax;
+    commandeGauche = commandeGauchePrecedente + changement0 * facteurRampe;
+    commandeDroite = commandeDroitePrecedente + changement1 * facteurRampe;
+    MOTOR_SetSpeed(0, commandeGauche);
     MOTOR_SetSpeed(1, commandeDroite);
+    commandeGauchePrecedente = commandeGauche;
+    commandeDroitePrecedente = commandeDroite;
 
     encodeurGauchePrecedent = encodeurGauche;
     encodeurDroitPrecedent = encodeurDroit;
     tempsPrecedent = tempsPresent;
+
+    if (CALIBRATION_DEBUG && tempsPresent - debutAvanceMs <= 1000 && nombreMesuresDemarrage < 20)
+    {
+        MesureDemarrage &mesure = mesuresDemarrage[nombreMesuresDemarrage++];
+        mesure.tempsMs = tempsPresent - debutAvanceMs;
+        mesure.pulses0 = encodeurGauche - debutAvance0;
+        mesure.pulses1 = encodeurDroit - debutAvance1;
+        mesure.commande0 = commandeGauche;
+        mesure.commande1 = commandeDroite;
+        mesure.erreurVitesse = erreur;
+        mesure.facteurRampe = facteurRampe;
+    }
 
     if(DEBUG_EN == 0) return;
 
@@ -99,11 +163,87 @@ void pid_avance(void)
 }
 
 
+float pid_distanceArret(void)
+{
+    if (!initialise || vitesseDroiteCmS <= 0.0f ||
+        (commandeGauchePrecedente <= 0.0f && commandeDroitePrecedente <= 0.0f))
+        return 0.0f;
+    unsigned long duree = RAMPE_ARRET_MS;
+    if (!digitalRead(vertpin) || !digitalRead(rougepin)) duree = RAMPE_OBSTACLE_MS;
+    return vitesseDroiteCmS * duree / 2000.0f * COEFF_ANTICIPATION_ARRET + MARGE_ARRET_CM;
+}
+
+
+void pid_arret(void)
+{
+    const unsigned long debutArret = millis();
+    const int32_t debut0 = ENCODER_Read(0);
+    const int32_t debut1 = ENCODER_Read(1);
+    float depart0 = commandeGauchePrecedente;
+    float depart1 = commandeDroitePrecedente;
+    const float commandeInitiale0 = depart0;
+    const float commandeInitiale1 = depart1;
+    bool obstacleDetecte = !digitalRead(vertpin) || !digitalRead(rougepin);
+    unsigned long duree = RAMPE_ARRET_MS;
+    if (obstacleDetecte) duree = RAMPE_OBSTACLE_MS;
+    unsigned long debutRampe = millis();
+
+    while (commandeGauchePrecedente > 0.0f || commandeDroitePrecedente > 0.0f)
+    {
+        if (!obstacleDetecte && (!digitalRead(vertpin) || !digitalRead(rougepin)))
+        {
+            depart0 = commandeGauchePrecedente;
+            depart1 = commandeDroitePrecedente;
+            debutRampe = millis();
+            duree = RAMPE_OBSTACLE_MS;
+            obstacleDetecte = true;
+        }
+        float facteur = 0.0f;
+        if (duree > 0 && millis() - debutRampe < duree)
+            facteur = 1.0f - (millis() - debutRampe) / (float)duree;
+        commandeGauchePrecedente = depart0 * facteur;
+        commandeDroitePrecedente = depart1 * facteur;
+        MOTOR_SetSpeed(0, commandeGauchePrecedente);
+        MOTOR_SetSpeed(1, commandeDroitePrecedente);
+        if (facteur > 0.0f) delay(10);
+    }
+    MOTOR_SetSpeed(0, 0);
+    MOTOR_SetSpeed(1, 0);
+    initialise = false;
+    if (0)
+    {
+        const unsigned long dureeReelle = millis() - debutArret;
+        const float distance0 = (ENCODER_Read(0) - debut0) * CM_PAR_IMPULSION_0;
+        const float distance1 = (ENCODER_Read(1) - debut1) * CM_PAR_IMPULSION_1;
+        Serial.print("CAL ARRET obstacle="); Serial.print(obstacleDetecte);
+        Serial.print(" duree_ms="); Serial.print(dureeReelle);
+        Serial.print(" commande0="); Serial.print(commandeInitiale0, 4);
+        Serial.print(" commande1="); Serial.print(commandeInitiale1, 4);
+        Serial.print(" integrale="); Serial.print(correctionIntegrale, 6);
+        Serial.print(" distance0_cm="); Serial.print(distance0, 3);
+        Serial.print(" distance1_cm="); Serial.println(distance1, 3);
+        for (int i = 0; i < nombreMesuresDemarrage; i++)
+        {
+            const MesureDemarrage &mesure = mesuresDemarrage[i];
+            Serial.print("CAL DEMARRAGE t_ms="); Serial.print(mesure.tempsMs);
+            Serial.print(" pulses0="); Serial.print(mesure.pulses0);
+            Serial.print(" pulses1="); Serial.print(mesure.pulses1);
+            Serial.print(" ecart_cm=");
+            Serial.print(mesure.pulses0 * CM_PAR_IMPULSION_0 - mesure.pulses1 * CM_PAR_IMPULSION_1, 3);
+            Serial.print(" commande0="); Serial.print(mesure.commande0, 4);
+            Serial.print(" commande1="); Serial.print(mesure.commande1, 4);
+            Serial.print(" erreur_vitesse="); Serial.print(mesure.erreurVitesse, 2);
+            Serial.print(" facteur_rampe="); Serial.println(mesure.facteurRampe, 4);
+        }
+    }
+}
+
+
 void pid_tourne(bool direction, int angle)
 {
     const float vitesseMin = 0.15f;
-    const float vitesseMax = 0.4f;
-    const float acceleration = 0.8f; // Commande moteur par seconde.
+    const float vitesseMax = 0.25f;
+    const float acceleration = 0.4f;
     const float kpPosition = 0.0008f;
     const float kpSynchronisation = 0.0003f;
     const int32_t tolerancePulses = 8;
@@ -111,10 +251,11 @@ void pid_tourne(bool direction, int angle)
 
     if (angle <= 0) return;
 
-    const float distance = angle * (DISTANCEENTREROUES_MM * 3.14159f) / 360.0f;
-    const int32_t cible = (int32_t)(distance / (DIAMETRE_ROUE_MM * 3.14159f) * 3200.0f);
-    Serial.print("Nombre de pulses pour tourner: ");
-    Serial.println(cible);
+    float coefficient = COEFF_ROTATION_GAUCHE;
+    if (direction == TOURNE_DROITE) coefficient = COEFF_ROTATION_DROITE;
+    const float distance = angle * (DISTANCEENTREROUES_MM * 3.14159f) / 360.0f * coefficient;
+    const int32_t cible0 = (int32_t)(distance * 0.1f / CM_PAR_IMPULSION_0 + 0.5f);
+    const int32_t cible1 = (int32_t)(distance * 0.1f / CM_PAR_IMPULSION_1 + 0.5f);
     if(direction == TOURNE_DROITE) {
         Serial.println("Tourne a droite");
     } else {
@@ -140,24 +281,22 @@ void pid_tourne(bool direction, int angle)
     {
         const int32_t parcours0 = abs(ENCODER_Read(0) - debut0);
         const int32_t parcours1 = abs(ENCODER_Read(1) - debut1);
-        const int32_t restant0 = cible - parcours0;
-        const int32_t restant1 = cible - parcours1;
+        const int32_t restant0 = cible0 - parcours0;
+        const int32_t restant1 = cible1 - parcours1;
 
         if(!termine0 && restant0 <= tolerancePulses) {
             termine0 = true;
-            Serial.println("Roue gauche termine");
+
         }
         if(!termine1 && restant1 <= tolerancePulses) {
             termine1 = true;
-            Serial.println("Roue droite termine");
+
         }
 
-        // Limiter la montee de puissance au demarrage du pivot du caster.
         float plafond = vitesseMin + acceleration * ((millis() - debutMs) / 1000.0f);
         if (plafond > vitesseMax) plafond = vitesseMax;
 
-        // Ralentir selon la distance restante et freiner la roue en avance.
-        const float ecart = parcours0 - parcours1;
+        const float ecart = parcours0 * COEFF_DISTANCE_0 - parcours1 * COEFF_DISTANCE_1;
         const float correction = (!termine0 && !termine1) ? kpSynchronisation * ecart : 0.0f;
         float commande0 = kpPosition * restant0 - correction;
         float commande1 = kpPosition * restant1 + correction;
@@ -166,7 +305,6 @@ void pid_tourne(bool direction, int angle)
         if (commande0 > plafond) {commande0 = plafond;}
         if (commande1 > plafond) {commande1 = plafond;}
 
-        // Une roue arrivee reste arretee pendant que l'autre termine.
         if(!termine0) {
             MOTOR_SetSpeed(0, signe0 * commande0);
         } else {
@@ -182,9 +320,24 @@ void pid_tourne(bool direction, int angle)
 
     MOTOR_SetSpeed(0, 0.0f);
     MOTOR_SetSpeed(1, 0.0f);
-    // Laisser le robot se stabiliser avant de reprendre la mesure de position.
     delay(100);
     encodeur_1_precedent = ENCODER_Read(1);
     initialise = false;
+    if (CALIBRATION_DEBUG)
+    {
+        const int32_t parcours0 = abs(ENCODER_Read(0) - debut0);
+        const int32_t parcours1 = abs(ENCODER_Read(1) - debut1);
+        const float angleEncodeurs = (parcours0 * CM_PAR_IMPULSION_0 + parcours1 * CM_PAR_IMPULSION_1) *
+            10.0f / DISTANCEENTREROUES_MM * 180.0f / 3.14159f;
+        Serial.print("CAL ROT sens="); Serial.print((int)direction);
+        Serial.print(" angle_demande="); Serial.print(angle);
+        Serial.print(" cible0="); Serial.print(cible0);
+        Serial.print(" cible1="); Serial.print(cible1);
+        Serial.print(" pulses0="); Serial.print(parcours0);
+        Serial.print(" pulses1="); Serial.print(parcours1);
+        Serial.print(" erreur0="); Serial.print(parcours0 - cible0);
+        Serial.print(" erreur1="); Serial.print(parcours1 - cible1);
+        Serial.print(" angle_encodeurs="); Serial.println(angleEncodeurs, 2);
+    }
     Serial.println("Tourne complete");
 }
