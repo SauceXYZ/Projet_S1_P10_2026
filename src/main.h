@@ -26,11 +26,9 @@
 #endif
 #define RAMPE_ARRET_MS 120
 #define RAMPE_OBSTACLE_MS 200
-// Anticiper la rampe et la petite distance de roue libre apres la commande zero.
 #define COEFF_ANTICIPATION_ARRET 1.0f
 #define MARGE_ARRET_CM 0.0f
 
-// Calibration : laisser a 1.0 tant qu'aucune mesure physique n'a ete faite.
 #define CALIBRATION_DEBUG 0
 #define IMPULSIONS_PAR_TOUR 3200.0f
 #define COEFF_DISTANCE_0 1.0f
@@ -39,7 +37,6 @@
 #define COEFF_ROTATION_DROITE 0.997f
 #define CM_PAR_IMPULSION_0 (DIAMETRE_ROUE_MM * 0.1f * 3.14159f / IMPULSIONS_PAR_TOUR * COEFF_DISTANCE_0)
 #define CM_PAR_IMPULSION_1 (DIAMETRE_ROUE_MM * 0.1f * 3.14159f / IMPULSIONS_PAR_TOUR * COEFF_DISTANCE_1)
-// Apres la frontiere + 2 cm, finir au centre malgre une detection precoce.
 #define TOLERANCE_CASE_CM (CASE_CM / 2.0f - 2.0f)
 
 
