@@ -1,25 +1,8 @@
-/*
-Projet: Le nom du script
-Equipe: Votre numero d'equipe
-Auteurs: Les membres auteurs du script
-Description: Breve description du script
-Date: Derniere date de modification
-*/
-
-/*
-Inclure les librairies de functions que vous voulez utiliser
-*/
 #include <LibRobus.h>
 #include "mouvement.h"
 #include "main.h"
 #include "sifflet.h"
-#include "pid.h"  
-
-/*
-Variables globales et defines
- -> defines...
- -> L'ensemble des fonctions y ont acces
-*/
+#include "pid.h"
 
 int vertpin = 48;
 int rougepin = 49;
@@ -30,24 +13,11 @@ float lab_posy = 0;
 
 int direction = FACE_AVANT;
 
-float y_total = 500.0f;
-float x_total_max = 75.0f;
-float x_total_min = -75.0f;
-
-/*
-Vos propres fonctions sont creees ici
-*/
-
-/*
-Fonctions d'initialisation (setup)
- -> Se fait appeler au debut du programme
- -> Se fait appeler seulement un fois
- -> Generalement on y initilise les varibbles globales
-*/
 void setup(){
   BoardInit();
   pid_init();
-  
+  Serial.begin(115200);
+
   //initialisation
   pinMode(vertpin, INPUT);
   pinMode(rougepin, INPUT);
@@ -59,36 +29,8 @@ void setup(){
 
   attendSifflet();
   Serial.println("Sifflet detecter");
-  // delay(100);
-  // pid_tourne(TOURNE_GAUCHE, 90);
-  // delay(500);
-  // pid_tourne(TOURNE_GAUCHE, 90);
-  // delay(500);
-  // pid_tourne(TOURNE_GAUCHE, 90);
-  // delay(500);
-  // pid_tourne(TOURNE_GAUCHE, 90);
-  // attendSifflet();
-  // pid_tourne(TOURNE_DROITE, 90);
-  // delay(500);
-  // pid_tourne(TOURNE_DROITE, 90);
-  // delay(500);
-  // pid_tourne(TOURNE_DROITE, 90);
-  // delay(500);
-  // pid_tourne(TOURNE_DROITE, 90);
-
 }
 
-/*
-Fonctions de boucle infini
- -> Se fait appeler perpetuellement suite au "setup"
-*/
 void loop() {
-  // if(avance() == 1) {
-  //   scan();
-  //   //Serial.println("Scan complete");
-  // }
-
-  //avanceV3();
-
-  
+  avanceV3();
 }

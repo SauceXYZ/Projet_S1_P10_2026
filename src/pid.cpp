@@ -2,8 +2,6 @@
 #include <LibRobus.h>
 #include "main.h"
 
-#define DEBUG_EN 0
-
 const float vitesseReference = 0.5f;
 const unsigned long periodeMs = 50;
 const float accelerationAvance = 0.6f;
@@ -23,23 +21,6 @@ int32_t encodeurDroitPrecedent = 0;
 bool initialise = false;
 static float vitesseDroiteCmS = 0.0f;
 
-struct MesureDemarrage
-{
-    unsigned long tempsMs;
-    int32_t pulses0;
-    int32_t pulses1;
-    float commande0;
-    float commande1;
-    float erreurVitesse;
-    float facteurRampe;
-};
-static MesureDemarrage mesuresDemarrage[20];
-static int nombreMesuresDemarrage = 0;
-static unsigned long debutAvanceMs = 0;
-static int32_t debutAvance0 = 0;
-static int32_t debutAvance1 = 0;
-
-
 void pid_init(void)
 {
     commandeGauchePrecedente = 0.0f;
@@ -51,18 +32,9 @@ void pid_init(void)
     encodeurGauchePrecedent = ENCODER_Read(0);
     encodeurDroitPrecedent = ENCODER_Read(1);
     tempsPrecedent = millis();
-    debutAvanceMs = tempsPrecedent;
-    debutAvance0 = encodeurGauchePrecedent;
-    debutAvance1 = encodeurDroitPrecedent;
-    nombreMesuresDemarrage = 0;
     initialise = true;
 }
 //source : https://www.teachmemicro.com/arduino-pid-control-tutorial/
-void pid_avance(void)
-{
-    pid_avance(vitesseReference);
-}
-
 void pid_avance(float vitesseCible)
 {
     if (!initialise) {
@@ -118,8 +90,24 @@ void pid_avance(float vitesseCible)
 
     const float changement0 = commandeGauche - commandeGauchePrecedente;
     const float changement1 = commandeDroite - commandeDroitePrecedente;
-    const float amplitude0 = changement0 < 0.0f ? -changement0 : changement0;
-    const float amplitude1 = changement1 < 0.0f ? -changement1 : changement1;
+    float amplitude0;
+    if (changement0 < 0.0f)
+    {
+        amplitude0 = -changement0;
+    }
+    else
+    {
+        amplitude0 = changement0;
+    }
+    float amplitude1;
+    if (changement1 < 0.0f)
+    {
+        amplitude1 = -changement1;
+    }
+    else
+    {
+        amplitude1 = changement1;
+    }
     float amplitudeMax = amplitude0;
     if (amplitude1 > amplitudeMax) amplitudeMax = amplitude1;
     float facteurRampe = 1.0f;
@@ -135,30 +123,6 @@ void pid_avance(float vitesseCible)
     encodeurDroitPrecedent = encodeurDroit;
     tempsPrecedent = tempsPresent;
 
-    if (CALIBRATION_DEBUG && tempsPresent - debutAvanceMs <= 1000 && nombreMesuresDemarrage < 20)
-    {
-        MesureDemarrage &mesure = mesuresDemarrage[nombreMesuresDemarrage++];
-        mesure.tempsMs = tempsPresent - debutAvanceMs;
-        mesure.pulses0 = encodeurGauche - debutAvance0;
-        mesure.pulses1 = encodeurDroit - debutAvance1;
-        mesure.commande0 = commandeGauche;
-        mesure.commande1 = commandeDroite;
-        mesure.erreurVitesse = erreur;
-        mesure.facteurRampe = facteurRampe;
-    }
-
-    if(DEBUG_EN == 0) return;
-
-    Serial.print("Vitesse gauche (imp/s): ");
-    Serial.print(vitesseGauche);
-    Serial.print(" | Vitesse droite (imp/s): ");
-    Serial.print(vitesseDroite);
-    Serial.print(" | Commande droite: ");
-    Serial.print(commandeDroite, 4);
-    Serial.print(" | Correction I: ");
-    Serial.print(correctionIntegrale, 4);
-    Serial.print(" | Correction D: ");
-    Serial.println(correctionDerivee, 4);
 }
 
 
@@ -175,13 +139,8 @@ float pid_distanceArret(void)
 
 void pid_arret(void)
 {
-    const unsigned long debutArret = millis();
-    const int32_t debut0 = ENCODER_Read(0);
-    const int32_t debut1 = ENCODER_Read(1);
     float depart0 = commandeGauchePrecedente;
     float depart1 = commandeDroitePrecedente;
-    const float commandeInitiale0 = depart0;
-    const float commandeInitiale1 = depart1;
     bool obstacleDetecte = !digitalRead(vertpin) || !digitalRead(rougepin);
     unsigned long duree = RAMPE_ARRET_MS;
     if (obstacleDetecte) duree = RAMPE_OBSTACLE_MS;
@@ -209,32 +168,6 @@ void pid_arret(void)
     MOTOR_SetSpeed(0, 0);
     MOTOR_SetSpeed(1, 0);
     initialise = false;
-    if (0)
-    {
-        const unsigned long dureeReelle = millis() - debutArret;
-        const float distance0 = (ENCODER_Read(0) - debut0) * CM_PAR_IMPULSION_0;
-        const float distance1 = (ENCODER_Read(1) - debut1) * CM_PAR_IMPULSION_1;
-        Serial.print("CAL ARRET obstacle="); Serial.print(obstacleDetecte);
-        Serial.print(" duree_ms="); Serial.print(dureeReelle);
-        Serial.print(" commande0="); Serial.print(commandeInitiale0, 4);
-        Serial.print(" commande1="); Serial.print(commandeInitiale1, 4);
-        Serial.print(" integrale="); Serial.print(correctionIntegrale, 6);
-        Serial.print(" distance0_cm="); Serial.print(distance0, 3);
-        Serial.print(" distance1_cm="); Serial.println(distance1, 3);
-        for (int i = 0; i < nombreMesuresDemarrage; i++)
-        {
-            const MesureDemarrage &mesure = mesuresDemarrage[i];
-            Serial.print("CAL DEMARRAGE t_ms="); Serial.print(mesure.tempsMs);
-            Serial.print(" pulses0="); Serial.print(mesure.pulses0);
-            Serial.print(" pulses1="); Serial.print(mesure.pulses1);
-            Serial.print(" ecart_cm=");
-            Serial.print(mesure.pulses0 * CM_PAR_IMPULSION_0 - mesure.pulses1 * CM_PAR_IMPULSION_1, 3);
-            Serial.print(" commande0="); Serial.print(mesure.commande0, 4);
-            Serial.print(" commande1="); Serial.print(mesure.commande1, 4);
-            Serial.print(" erreur_vitesse="); Serial.print(mesure.erreurVitesse, 2);
-            Serial.print(" facteur_rampe="); Serial.println(mesure.facteurRampe, 4);
-        }
-    }
 }
 
 
@@ -296,7 +229,15 @@ void pid_tourne(bool direction, int angle)
         if (plafond > vitesseMax) plafond = vitesseMax;
 
         const float ecart = parcours0 * COEFF_DISTANCE_0 - parcours1 * COEFF_DISTANCE_1;
-        const float correction = (!termine0 && !termine1) ? kpSynchronisation * ecart : 0.0f;
+        float correction;
+        if (!termine0 && !termine1)
+        {
+            correction = kpSynchronisation * ecart;
+        }
+        else
+        {
+            correction = 0.0f;
+        }
         float commande0 = kpPosition * restant0 - correction;
         float commande1 = kpPosition * restant1 + correction;
         if (commande0 < vitesseMin) {commande0 = vitesseMin;}

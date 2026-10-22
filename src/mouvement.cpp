@@ -3,9 +3,8 @@
 #include <LibRobus.h>
 #include "main.h"
 
-#define SCAN_DEBUG 0
 #ifndef AVANCE_V3_DEBUG
-#define AVANCE_V3_DEBUG 0
+#define AVANCE_V3_DEBUG 1
 #endif
 
 static int ligne = 10;
@@ -34,159 +33,10 @@ char grilleMap[11][3] =
     {3, 10, 6}
 };
 
-bool positionRobot[11][3] =
-{
-    {false, false, false},
-    {false, false, false},
-    {false, false, false},
-    {false, false, false},
-    {false, false, false},
-    {false, false, false},
-    {false, false, false},
-    {false, false, false},
-    {false, false, false},
-    {false, false, false},
-    {false, true, false}
-};
-
 int32_t encodeur_1_precedent = 0;
 
-static void attendSerial(void)
-{
-    while (Serial.available() > 0)
-    {
-        Serial.read();
-    }
-
-    int caractere;
-    do
-    {
-        while (Serial.available() == 0) {}
-        caractere = Serial.read();
-    } while (caractere == '\r' || caractere == '\n');
-}
-
-int avance(void)
-{
-    float distance_enc_cm;
-    int32_t compte=0;
-    int vert;
-    int rouge;
-    compte = ENCODER_Read(1); 
-    distance_enc_cm = (compte - encodeur_1_precedent) * CM_PAR_IMPULSION_1;
-    //Serial.println(distance_enc_cm, DEC);
-    vert = digitalRead(vertpin);
-    rouge = digitalRead(rougepin);
-    //Serial.println("A");
-    // Serial.print("DEL vert: ");
-    // Serial.print(vert);
-    // Serial.print(" | DEL rouge: ");
-    // Serial.println(rouge);
-    if (vert && rouge)
-    {
-        //Serial.println("B");
-        if (lab_posy < y_total && lab_posx < x_total_max && lab_posx > x_total_min)
-        {
-            //Serial.print("C");
-            pid_avance();
-            if(distance_enc_cm >= 1)
-            {
-                if(direction == FACE_AVANT)
-                {
-                    lab_posy=lab_posy + distance_enc_cm;
-                }
-                else if(direction == FACE_ARRIERE)
-                {
-                    lab_posy=lab_posy - distance_enc_cm;
-                }
-                else if (direction == FACE_DROIT)
-                {
-                    lab_posx=lab_posx + distance_enc_cm;
-                }
-                else if (direction == FACE_GAUCHE)
-                {
-                    lab_posx=lab_posx - distance_enc_cm;
-                }
-                encodeur_1_precedent = compte;
-
-            }
-
-        }
-        else
-        {
-            //Serial.println("D");
-            if (FACE_GAUCHE == direction && lab_posx <= x_total_max)
-            
-            {
-                if (lab_posx < x_total_min)
-                {
-                    lab_posx = x_total_min+0.1;
-                }
-
-                faitFace(FACE_AVANT);
-                return 0;
-            }
-            
-            else if (FACE_DROIT == direction && lab_posx >= x_total_max)
-            {
-                if (lab_posx > x_total_max)
-                {
-                    lab_posx = x_total_max-0.1;
-                }
-
-                faitFace(FACE_GAUCHE);
-                return 0;
-            }
-            else if (FACE_AVANT == direction && lab_posy >= y_total)
-            {
-                if (lab_posy > y_total)
-                {
-                    lab_posy = y_total-0.1;
-                }
-                
-                faitFace(FACE_ARRIERE);
-                return 0;
-            }
-           
-        }
-    }
-    else
-    {
-        Serial.println("E");
-        MOTOR_SetSpeed(0,0);
-        MOTOR_SetSpeed(1,0);
-        return 1;
-     
-    }
-return 0;
-} 
-
-// return 0 si ok
-// return 1 si trop proche de limite ouest
-// return 2 si trop proche de limite est
-// return 3 si trop proche de limite nord
-// return 4 si trop proche de limite sud
-
-int checkBoundary(void)
-{
-    if (lab_posx < x_total_min)
-    {
-        return LIMIT_OUEST;
-    }
-    else if (lab_posx > x_total_max)
-    {
-        return LIMIT_EST;
-    }
-    else if (lab_posy > y_total)
-    {
-        return LIMIT_NORD;
-    }
-    else if (lab_posy < 0)
-    {
-        return LIMIT_SUD;
-    }
-    return 0;
-}
+static void faitFace(int orientation);
+static void tourne(int directionDemande);
 
 static bool avanceImpulsions(int32_t distance, bool versCentre = false, bool finDeCase = false)
 {
@@ -199,8 +49,6 @@ static bool avanceImpulsions(int32_t distance, bool versCentre = false, bool fin
         Serial.print("Encodeur 1 debut: "); Serial.println(debut);
         Serial.print("Encodeur 1 precedent: "); Serial.println(encodeur_1_precedent);
         Serial.print("Cible en impulsions: "); Serial.println(distance);
-        Serial.println("Envoyer un caractere pour commencer le deplacement");
-        attendSerial();
     }
     const int32_t debut0 = ENCODER_Read(0);
     pid_init();
@@ -280,7 +128,7 @@ static bool avanceImpulsions(int32_t distance, bool versCentre = false, bool fin
     return complete;
 }
 
-int deplaceCase(void)
+static int deplaceCase(void)
 {
     const float centreX = (colomne - 1) * CASE_CM;
     const float centreY = (10 - ligne) * CASE_CM + CASE_CM / 2.0f;
@@ -295,7 +143,6 @@ int deplaceCase(void)
     const int32_t debut = ENCODER_Read(1);
     bool complete = avanceImpulsions(distance, true);
     int32_t parcouru = ENCODER_Read(1) - debut;
-    // La rampe a pu faire entrer le robot dans la case apres la detection.
     float restant_cm = (distance - parcouru) * CM_PAR_IMPULSION_1;
     if (!complete && restant_cm <= TOLERANCE_CASE_CM)
     {
@@ -310,7 +157,7 @@ int deplaceCase(void)
         }
         else
         {
-            complete = true; // Le freinage a deja atteint ou depasse le centre.
+            complete = true;
         }
         parcouru = ENCODER_Read(1) - debut;
     }
@@ -330,7 +177,6 @@ int deplaceCase(void)
         return 0;
     }
 
-    positionRobot[ligne][colomne] = false;
     if (direction == FACE_AVANT)
     {
         ligne -= 1;
@@ -347,7 +193,6 @@ int deplaceCase(void)
     {
         colomne -= 1;
     }
-    positionRobot[ligne][colomne] = true;
     if (AVANCE_V3_DEBUG)
     {
         Serial.print("Position mesuree X (cm): "); Serial.print(lab_posx);
@@ -356,154 +201,12 @@ int deplaceCase(void)
     return 1;
 }
 
-/*
-pseudo code
-
-si pas d'obstacle
-    avance d'une case
-sinon
-    tourne vers cote plus loing de limite x
-    si pas d'obstacle
-        avance d'une case
-        fait face avant
-    sinon
-        tourne autre direction
-        si pas d'obstacle
-            avance d'une case
-            fait face avant
-        sinon
-            arrete
-
- */
-
- /*
-    N
-O       E
-    S
- */
-
-// void avanceV2(void)
-// {
-//     int vert = digitalRead(vertpin);
-//     int rouge = digitalRead(rougepin);
-
-//     if(checkBoundary() == LIMIT_NORD)
-//     {
-//         faitFace(FACE_ARRIERE);
-//         vert = digitalRead(vertpin);
-//         rouge = digitalRead(rougepin);
-//     }
-
-//     if(checkBoundary() == LIMIT_OUEST)
-//     {
-//         faitFace(FACE_DROIT);
-//         vert = digitalRead(vertpin);
-//         rouge = digitalRead(rougepin);
-//     }
-//     else if(checkBoundary() == LIMIT_EST)
-//     {
-//         faitFace(FACE_GAUCHE);
-//         vert = digitalRead(vertpin);
-//         rouge = digitalRead(rougepin);
-//     }
-
-//     if(vert && rouge)
-//     {
-//         deplace(case_cm);
-//         //delay(1000);
-//     }
-//     else
-//     {
-//         if (lab_posx < 0)
-//         {
-//             tourne(TOURNE_DROITE);
-//             vert = digitalRead(vertpin);
-//             rouge = digitalRead(rougepin);
-//             if(vert && rouge)
-//             {
-//                 deplace(case_cm);
-//                 faitFace(FACE_AVANT);
-//             }
-//             else
-//             {
-//                 tourne(TOURNE_GAUCHE);
-//                 tourne(TOURNE_GAUCHE);
-//                 vert = digitalRead(vertpin);
-//                 rouge = digitalRead(rougepin);
-//                 if(vert && rouge)
-//                 {
-//                     deplace(case_cm);
-//                     faitFace(FACE_AVANT);
-//                 }
-//                 else
-//                 {
-//                     MOTOR_SetSpeed(0, 0);
-//                     MOTOR_SetSpeed(1, 0);
-//                 }
-//             }
-//         }
-//         else
-//         {
-//             tourne(TOURNE_GAUCHE);
-//             vert = digitalRead(vertpin);
-//             rouge = digitalRead(rougepin);
-//             if(vert && rouge)
-//             {
-//                 deplace(case_cm);
-//                 faitFace(FACE_AVANT);
-//             }
-//             else
-//             {
-//                 tourne(TOURNE_DROITE);
-//                 tourne(TOURNE_DROITE);
-//                 vert = digitalRead(vertpin);
-//                 rouge = digitalRead(rougepin);
-//                 if(vert && rouge)
-//                 {
-//                     deplace(case_cm);
-//                     faitFace(FACE_AVANT);
-//                 }
-//                 else
-//                 {
-//                     MOTOR_SetSpeed(0, 0);
-//                     MOTOR_SetSpeed(1, 0);
-//                 }
-//             }
-//         }
-//     }
-
-    
-// }
-
-
-/*
-Avance dans le parcours en regardant les possibilites dans le tableau de la carte
-pseudo code
-
-regarde la position du robot dans le tableau de la carte
-regarde les possibilites de deplacement dans le tableau de la carte
-si possible de deplacer vers l'avant
-    avance d'une case
-sinon si possible de deplacer vers la gauche
-    tourne a gauche
-    avance d'une case
-    garde cette orientation
-sinon si possible de deplacer vers la droite
-    tourne a droite
-    avance d'une case
-    garde cette orientation
-sinon si objet en avant et impossible gauche droit
-    face arriere 
-    avance une case
-
-*/
 void avanceV3(void)
 {
     static unsigned int visites[11][3] = {};
     static bool impasses[11][3] = {};
     static bool debut = true;
     static bool termine = false;
-    static bool retour = false;
     if (termine) return;
 
     if (debut)
@@ -514,31 +217,8 @@ void avanceV3(void)
         encodeur_1_precedent = ENCODER_Read(1);
         debut = false;
     }
-    if (retour)
-    {
-        if (ligne == 10)
-        {
-            MOTOR_SetSpeed(0, 0);
-            MOTOR_SetSpeed(1, 0);
-            if (AVANCE_V3_DEBUG) Serial.println("Retour au depart termine");
-            termine = true;
-            return;
-        }
-        // Retour dans la colonne centrale, sans consulter la carte des rubans.
-        faitFace(FACE_ARRIERE);
-        delay(100);
-        if (deplaceCase() != 1)
-        {
-            MOTOR_SetSpeed(0, 0);
-            MOTOR_SetSpeed(1, 0);
-            if (AVANCE_V3_DEBUG) Serial.println("Retour direct bloque par un obstacle");
-            termine = true;
-        }
-        return;
-    }
     if (ligne == 0)
     {
-        // Rejoindre (0, 1) avant l'arret final ou le retour direct.
         if (colomne != 1)
         {
             if (colomne == 0) faitFace(FACE_DROIT);
@@ -554,14 +234,7 @@ void avanceV3(void)
         MOTOR_SetSpeed(0, 0);
         MOTOR_SetSpeed(1, 0);
         if (AVANCE_V3_DEBUG) Serial.println("Arrivee atteinte");
-        if (RETOUR_ACTIF)
-        {
-            retour = true;
-        }
-        else
-        {
-            termine = true;
-        }
+        termine = true;
         return;
     }
 
@@ -682,57 +355,6 @@ void avanceV3(void)
     }
 }
 
-
-
-// void tourner_gauche(void)
-// {
-//     pid_tourne(TOURNE_GAUCHE, 90);
-//     if (direction == FACE_AVANT)
-//     {
-//         direction = FACE_GAUCHE;
-//     }
-//     else if (direction == FACE_GAUCHE)
-//     {
-//         direction = FACE_ARRIERE;
-//     }
-//     else if (direction == FACE_DROIT)
-//     {
-//         direction = FACE_AVANT;
-//     }
-//     else if (direction == FACE_ARRIERE)
-//     {
-//         direction = FACE_DROIT;
-//     }
-//     ENCODER_Reset(1);
-//     ENCODER_Reset(0);
-//     return;
-// }
-
-// void tourner_droite(void)
-// {
-//     pid_tourne(TOURNE_DROITE, 90);
-//     MOTOR_SetSpeed(1,0);
-//     if (direction == FACE_AVANT)
-//     {
-//         direction = FACE_DROIT;
-//     }
-//     else if (direction == FACE_DROIT)
-//     {
-//         direction = FACE_ARRIERE;
-//     }
-//     else if (direction == FACE_ARRIERE)
-//     {
-//         direction = FACE_GAUCHE;
-//     }
-//     else if (direction == FACE_GAUCHE)
-//     {
-//         direction = FACE_AVANT;
-//     }
-//     ENCODER_Reset(1);
-//     ENCODER_Reset(0);
-//     return;
-// }
-
 static const int orientations[] = {FACE_AVANT, FACE_DROIT, FACE_ARRIERE, FACE_GAUCHE};
 
 static int indiceOrientation(int orientation)
@@ -744,12 +366,12 @@ static int indiceOrientation(int orientation)
     return -1;
 }
 
-void faitFace(int orientation)
+static void faitFace(int orientation)
 {
     const int depart = indiceOrientation(direction);
     const int arrivee = indiceOrientation(orientation);
     if (depart < 0 || arrivee < 0 || depart == arrivee) return;
-    delay(150);
+    delay(200);
     const int quartsDeTour = (arrivee - depart + 4) % 4;
     if (quartsDeTour == 3)
     {
@@ -760,10 +382,10 @@ void faitFace(int orientation)
         pid_tourne(TOURNE_DROITE, quartsDeTour * 90);
     }
     direction = orientation;
-    delay(500);
+    delay(450);
 }
 
-void tourne(int directionDemande)
+static void tourne(int directionDemande)
 {
     const int depart = indiceOrientation(direction);
     if (depart < 0) return;
@@ -775,139 +397,5 @@ void tourne(int directionDemande)
     else if (directionDemande == TOURNE_GAUCHE)
     {
         faitFace(orientations[(depart + 3) % 4]);
-    }
-}
-
-void scan(void)
-{
-    static bool scan_droit;
-    static bool scan_gauche;
-    static bool scan_avant;
-
-    MOTOR_SetSpeed(0, 0);
-    MOTOR_SetSpeed(1, 0);
-    if(SCAN_DEBUG){Serial.println("Moteur stop");}
-    //delay(1000);
-    if(SCAN_DEBUG){
-        Serial.println("Appuyer sur le bouton pour continuer le scan");
-        attendSerial();
-    }
-
-    if(SCAN_DEBUG){Serial.println("Scan avant");}
-    if(SCAN_DEBUG){Serial.print("LED vert: "); Serial.println(digitalRead(vertpin));}
-    if(SCAN_DEBUG){Serial.print("LED rouge: "); Serial.println(digitalRead(rougepin));}
-    if(!digitalRead(rougepin) || !digitalRead(vertpin))
-    {
-        if(SCAN_DEBUG){Serial.println("objet detecte avant");}
-        scan_avant = true;
-
-        if(SCAN_DEBUG){
-            Serial.println("Objet detecte avant, appuyer sur le bouton pour continuer le scan");
-            attendSerial();
-        }
-    }
-    else
-    {
-        if(SCAN_DEBUG){Serial.println("pas d'objet detecte avant");}
-        scan_avant = false;
-        
-        if(SCAN_DEBUG){
-            Serial.println("Pas d'objet detecte avant, appuyer sur le bouton pour continuer le scan");
-            attendSerial();
-        }
-    }
-
-    if(scan_avant == false)
-    {
-        if(SCAN_DEBUG){Serial.println("Choix: avancer");}
-        
-        if(SCAN_DEBUG){
-            Serial.println("Fin scan, appuyer sur le bouton pour continuer");
-            attendSerial();
-        }
-        return;
-    }
-
-
-    tourne(TOURNE_GAUCHE);
-    if(SCAN_DEBUG){
-        Serial.println("Fini de tourner a gauche, appuyer sur le bouton pour continuer le scan");
-        attendSerial();
-    }
-    if(SCAN_DEBUG){Serial.println("Scan gauche");}
-    delay(1000);
-    if(digitalRead(rougepin) || digitalRead(vertpin))
-    {
-        if(SCAN_DEBUG){Serial.println("pas d'objet detecte a gauche");}
-        
-        if(SCAN_DEBUG){
-            Serial.println("appuyer sur le bouton pour continuer le scan");
-            attendSerial();
-        }
-        scan_gauche = false;
-    }
-    else
-    {
-        if(SCAN_DEBUG){Serial.println("objet detecte a gauche");}
-        if(SCAN_DEBUG){
-            Serial.println("appuyer sur le bouton pour continuer le scan");
-            attendSerial();
-        }
-        scan_gauche = true;
-    }
-
-    tourne(TOURNE_DROITE);
-    tourne(TOURNE_DROITE);
-    delay(1000);
-    if(SCAN_DEBUG){Serial.println("Scan droit");}
-    if(digitalRead(rougepin) || digitalRead(vertpin))
-    {
-        if(SCAN_DEBUG){Serial.println("pas d'objet detecte a droite");}
-        if(SCAN_DEBUG){
-            Serial.println("appuyer sur le bouton pour continuer le scan");
-            attendSerial();
-        }
-        scan_droit = false;
-    }
-    else
-    {
-        if(SCAN_DEBUG){Serial.println("objet detecte a droite");}
-        if(SCAN_DEBUG){
-            Serial.println("appuyer sur le bouton pour continuer le scan");
-            attendSerial();
-        }
-        scan_droit = true;
-    }
-
-    tourne(TOURNE_GAUCHE);
-    delay(500);
-
-    if(!scan_gauche)
-    {
-        if(SCAN_DEBUG){Serial.println("Choix: tourner gauche");}
-        tourne(TOURNE_GAUCHE);
-        
-        if(SCAN_DEBUG){
-            Serial.println("fin du scan, appuyer sur le bouton pour continuer");
-            attendSerial();
-        }
-    }
-    else if(!scan_droit)
-    {
-        if(SCAN_DEBUG){Serial.println("Choix: tourner droit");}
-        tourne(TOURNE_DROITE);
-        if(SCAN_DEBUG){
-            Serial.println("fin du scan, appuyer sur le bouton pour continuer");
-            attendSerial();
-        }
-    }
-    else{
-        if(SCAN_DEBUG){Serial.println("Default face arriere");}
-        tourne(TOURNE_GAUCHE);
-        tourne(TOURNE_GAUCHE);
-        if(SCAN_DEBUG){
-            Serial.println("fin du scan, appuyer sur le bouton pour continuer");
-            attendSerial();
-        }
     }
 }
