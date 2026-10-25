@@ -38,7 +38,7 @@ int32_t encodeur_1_precedent = 0;
 static void faitFace(int orientation);
 static void tourne(int directionDemande);
 
-static bool avanceImpulsions(int32_t distance, bool versCentre = false, bool finDeCase = false)
+static bool avanceImpulsions(int32_t distance, bool versCentre, bool finDeCase)
 {
     const int32_t debut = ENCODER_Read(1);
     if (AVANCE_V3_DEBUG)
@@ -141,7 +141,7 @@ static int deplaceCase(void)
 
     const int32_t distance = (int32_t)(distance_cm * (1.0f / CM_PAR_IMPULSION_1));
     const int32_t debut = ENCODER_Read(1);
-    bool complete = avanceImpulsions(distance, true);
+    bool complete = avanceImpulsions(distance, true, false);
     int32_t parcouru = ENCODER_Read(1) - debut;
     float restant_cm = (distance - parcouru) * CM_PAR_IMPULSION_1;
     if (!complete && restant_cm <= TOLERANCE_CASE_CM)
@@ -169,7 +169,7 @@ static int deplaceCase(void)
             tourne(TOURNE_DROITE);
             tourne(TOURNE_DROITE);
             delay(100);
-            if (!avanceImpulsions(parcouru))
+            if (!avanceImpulsions(parcouru, false, false))
             {
                 return -1;
             }
@@ -385,7 +385,7 @@ static void faitFace(int orientation)
     delay(450);
 }
 
-static void tourne(int directionDemande)
+void tourne(int directionDemande)
 {
     const int depart = indiceOrientation(direction);
     if (depart < 0) return;
