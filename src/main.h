@@ -34,6 +34,9 @@
 extern int vertpin;
 extern int rougepin;
 extern int pinsifflet;
+extern int pinSuiveurGauche;
+extern int pinSuiveurMilieu;
+extern int pinSuiveurDroit;
 
 extern float lab_posx;
 extern float lab_posy;
