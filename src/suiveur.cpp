@@ -40,7 +40,7 @@ void suivreLaLigne()
         tournerGauche();
     }
     else if(!milieu && !gauche && droite){
-
+        tournerDroite();
     }
 }
 
@@ -73,31 +73,16 @@ void tournerGauche()
     {
         vitesseSuiveurDroit += ajoutCorrection;
         nbAugmentation++;
+        MOTOR_SetSpeed(1, vitesseSuiveurDroit);
     }
-    //sinon on a perdu la ligne
-    /*
-        On peut:
-            reculer pour la retrouver
-            tourner vers la gauche
-
-    */
-    else if(etatPrecedent == 0)
-    {
-        
-    }
-    
 }
 
-void tournerDroit()
+void tournerDroite()
 {
     if(etatPrecedent == 2)
     {
-        vitesseSuiveurDroit += ajoutCorrection;
+        vitesseSuiveurGauche += ajoutCorrection;
         nbAugmentation ++;
-    }
-    //même chose qu'en haut
-    else if(etatPrecedent == 0)
-    {
-        
+        MOTOR_SetSpeed(0, vitesseSuiveurGauche);
     }
 }
