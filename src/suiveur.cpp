@@ -76,6 +76,12 @@ void tournerDroite()
     Serial.print("Vitesse droite: "); Serial.println(vitesseSuiveurDroit);
 }
 
+void arret()
+{
+    MOTOR_SetSpeed(0,0);
+    MOTOR_SetSpeed(1,0);
+}
+
 void suivreLaLigne()
 {
     
