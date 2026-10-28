@@ -21,11 +21,13 @@ void suivreLaLigne()
         {
             vitesseSuiveurDroit -= ajoutCorrection * nbAugmentation;
             vitesseSuiveurDroit += ajoutLongTerme;
+            vitesseSuiveurGauche -= ajoutLongTerme;
         }
         else if(etatPrecedent == 2)
         {
             vitesseSuiveurGauche -= ajoutCorrection * nbAugmentation;
             vitesseSuiveurGauche += ajoutLongTerme;
+            vitesseSuiveurDroit -= ajoutLongTerme;
         }
         nbAugmentation = 0;
         avancerDroit();
@@ -56,6 +58,8 @@ void correctionVersGauche()
     etatPrecedent = 1;
     vitesseSuiveurDroit += ajoutCorrection;
     nbAugmentation++;
+    MOTOR_SetSpeed(1, vitesseSuiveurDroit);
+
 }
 
 void correctionVersDroite()
@@ -63,6 +67,8 @@ void correctionVersDroite()
     etatPrecedent = 2;
     vitesseSuiveurGauche += ajoutCorrection;
     nbAugmentation++;
+    MOTOR_SetSpeed(0, vitesseSuiveurDroit);
+
 }
 
 
