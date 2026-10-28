@@ -86,7 +86,7 @@ void suivreLaLigne()
     Serial.print("Gauche:");
     Serial.println(gauche);
     Serial.print("Droit:");
-    Serial.println(Droit);
+    Serial.println(droite);
 
     if(milieu && !gauche && !droite){
         if(etatPrecedent == 1) {
@@ -95,10 +95,6 @@ void suivreLaLigne()
         else if(etatPrecedent == 2) {
             vitesseSuiveurGauche -= ajoutCorrection * nbAugmentation;
         }
-        
-        // Sécurité pour ne pas descendre sous la vitesse de base
-        if(vitesseSuiveurDroit < vitesse_initiale) vitesseSuiveurDroit = vitesse_initiale;
-        if(vitesseSuiveurGauche < vitesse_initiale) vitesseSuiveurGauche = vitesse_initiale;
 
         nbAugmentation = 0;
         avancerDroit();
