@@ -9,9 +9,9 @@ int vertpin = 48;
 int rougepin = 49;
 int pinsifflet = 47;
 
-int pinSuiveurGauche = 50; //À changer pour la bonne pin
-int pinSuiveurMilieu = 51; //À changer pour la bonne pin
-int pinSuiveurDroit = 52; //À changer pour la bonne pin
+int pinSuiveurGauche = 31; //À changer pour la bonne pin
+int pinSuiveurMilieu = 33; //À changer pour la bonne pin
+int pinSuiveurDroit = 35; //À changer pour la bonne pin
 
 float lab_posx = 0;
 float lab_posy = 0;
@@ -38,7 +38,6 @@ void setup()
 
 void loop()
 {
-  delay(3000);
   Serial.println("Debut du suivi de ligne");
   suivreLaLigne();
 }

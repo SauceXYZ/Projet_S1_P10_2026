@@ -1,6 +1,7 @@
 #include <libRobus.h>
 #include "main.h"
 
+const float vitesse_initiale = 0.5f;
 float vitesseSuiveurGauche = 0.1f;
 float vitesseSuiveurDroit = 0.1f;
 float ajoutCorrection = 0.1f; 
@@ -22,11 +23,12 @@ void avancerDroit()
 void correctionVersGauche()
 {
     etatPrecedent = 1;
-    vitesseSuiveurDroit += ajoutCorrection;
     nbAugmentation++;
-    
+    vitesseSuiveurDroit += ajoutCorrection;
     if (vitesseSuiveurDroit > 1.0f) vitesseSuiveurDroit = 1.0f;
+    MOTOR_SetSpeed(0, vitesse_initiale); 
     MOTOR_SetSpeed(1, vitesseSuiveurDroit);
+
     Serial.println("Fait une correction vers la gauche");
     Serial.print("Vitesse gauche: "); Serial.println(vitesseSuiveurGauche);
     Serial.print("Vitesse droite: "); Serial.println(vitesseSuiveurDroit); 
@@ -35,27 +37,26 @@ void correctionVersGauche()
 void correctionVersDroite()
 {
     etatPrecedent = 2;
-    vitesseSuiveurGauche += ajoutCorrection;
     nbAugmentation++;
-    
-    if (vitesseSuiveurGauche > 1.0f) vitesseSuiveurGauche = 1.0f;
+    vitesseSuiveurGauche += ajoutCorrection;
+    if(vitesseSuiveurGauche > 1.0f) vitesseSuiveurGauche = 1.0f;
+    MOTOR_SetSpeed(0, vitesseSuiveurGauche);
+    MOTOR_SetSpeed(1, vitesse_initiale);
+
     Serial.println("Fait une correction vers la droite");
     Serial.print("Vitesse gauche: "); Serial.println(vitesseSuiveurGauche);
     Serial.print("Vitesse droite: "); Serial.println(vitesseSuiveurDroit); 
-    MOTOR_SetSpeed(0, vitesseSuiveurGauche);
 }
 
 void tournerGauche()
 {
-    vitesseSuiveurDroit += ajoutCorrection;
-    nbAugmentation++;
-    
-    if (vitesseSuiveurDroit > 1.0f) vitesseSuiveurDroit = 1.0f;
-    
-    // On force aussi le moteur gauche à ralentir pour pivoter de force
-    MOTOR_SetSpeed(0, vitesseSuiveurGauche * 0.5f); 
-    MOTOR_SetSpeed(1, vitesseSuiveurDroit);
     etatPrecedent = 1;
+    nbAugmentation++;
+    vitesseSuiveurDroit += ajoutCorrection * 1.5f;
+    if(vitesseSuiveurDroit > 1.0f) vitesseSuiveurDroit = 1.0f;
+    MOTOR_SetSpeed(0, vitesse_initiale * 0.2f); 
+    MOTOR_SetSpeed(1, vitesseSuiveurDroit);
+
     Serial.println("Tourne à gauche");
     Serial.print("Vitesse gauche: "); Serial.println(vitesseSuiveurGauche);
     Serial.print("Vitesse droite: "); Serial.println(vitesseSuiveurDroit);
@@ -63,68 +64,49 @@ void tournerGauche()
 
 void tournerDroite()
 {
-    vitesseSuiveurGauche += ajoutCorrection;
-    nbAugmentation++;
-    
-    if (vitesseSuiveurGauche > 1.0f) vitesseSuiveurGauche = 1.0f;
-    
-    MOTOR_SetSpeed(0, vitesseSuiveurGauche);
-    MOTOR_SetSpeed(1, vitesseSuiveurDroit * 0.5f);
     etatPrecedent = 2;
+    nbAugmentation++;
+    vitesseSuiveurGauche += ajoutCorrection * 1.5f;
+    if(vitesseSuiveurGauche > 1.0f) vitesseSuiveurGauche = 1.0f;
+    MOTOR_SetSpeed(0, vitesseSuiveurGauche);
+    MOTOR_SetSpeed(1, vitesse_initiale * 0.2f);
+
     Serial.println("Tourne à droite");
     Serial.print("Vitesse gauche: "); Serial.println(vitesseSuiveurGauche);
     Serial.print("Vitesse droite: "); Serial.println(vitesseSuiveurDroit);
 }
 
-void arret()
-{
-    MOTOR_SetSpeed(0,0);
-    MOTOR_SetSpeed(1,0);
-}
-
 void suivreLaLigne()
 {
-    
     bool milieu = digitalRead(pinSuiveurMilieu);
     bool gauche = digitalRead(pinSuiveurGauche);
     bool droite = digitalRead(pinSuiveurDroit);
 
-    if (milieu && !gauche && !droite) {
-        if (etatPrecedent == 1)
-        {
+    if(milieu && !gauche && !droite){
+        if(etatPrecedent == 1) {
             vitesseSuiveurDroit -= ajoutCorrection * nbAugmentation;
-            vitesseSuiveurDroit += ajoutLongTerme;
-            vitesseSuiveurGauche -= ajoutLongTerme;
         }
-        else if (etatPrecedent == 2)
-        {
+        else if(etatPrecedent == 2) {
             vitesseSuiveurGauche -= ajoutCorrection * nbAugmentation;
-            vitesseSuiveurGauche += ajoutLongTerme;
-            vitesseSuiveurDroit -= ajoutLongTerme;
         }
         
-        if (vitesseSuiveurDroit > 0.65f)  vitesseSuiveurDroit = 0.65f;
-        if (vitesseSuiveurDroit < 0.35f)  vitesseSuiveurDroit = 0.35f;
-        if (vitesseSuiveurGauche > 0.65f) vitesseSuiveurGauche = 0.65f;
-        if (vitesseSuiveurGauche < 0.35f) vitesseSuiveurGauche = 0.35f;
+        // Sécurité pour ne pas descendre sous la vitesse de base
+        if(vitesseSuiveurDroit < vitesse_initiale) vitesseSuiveurDroit = vitesse_initiale;
+        if(vitesseSuiveurGauche < vitesse_initiale) vitesseSuiveurGauche = vitesse_initiale;
 
         nbAugmentation = 0;
         avancerDroit();
     }
-    else if (milieu && gauche) {
+    else if(milieu && gauche){
         correctionVersGauche();
     }
-    else if (milieu && droite) {
+    else if(milieu && droite){
         correctionVersDroite();
     }
-    else if (!milieu && gauche && !droite) {
+    else if(!milieu && gauche && !droite){
         tournerGauche();
     }
-    else if (!milieu && !gauche && droite) {
+    else if(!milieu && !gauche && droite){
         tournerDroite();
     }
-    else {
-        arret();
-    }
-
 }
