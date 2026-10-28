@@ -81,6 +81,12 @@ void suivreLaLigne()
     bool milieu = digitalRead(pinSuiveurMilieu);
     bool gauche = digitalRead(pinSuiveurGauche);
     bool droite = digitalRead(pinSuiveurDroit);
+    Serial.print("Milieu:");
+    Serial.println(milieu);
+    Serial.print("Gauche:");
+    Serial.println(gauche);
+    Serial.print("Droit:");
+    Serial.println(Droit);
 
     if(milieu && !gauche && !droite){
         if(etatPrecedent == 1) {
