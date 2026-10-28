@@ -117,5 +117,8 @@ void suivreLaLigne()
     else if (!milieu && !gauche && droite) {
         tournerDroite();
     }
+    else {
+        arret();
+    }
 
 }
