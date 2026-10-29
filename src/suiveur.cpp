@@ -78,15 +78,29 @@ void tournerDroite()
 
 void suivreLaLigne()
 {
-    bool milieu = digitalRead(pinSuiveurMilieu);
-    bool gauche = digitalRead(pinSuiveurGauche);
-    bool droite = digitalRead(pinSuiveurDroit);
+    bool milieu = analogRead(pinSuiveurMilieu)>500;
+    bool gauche = analogRead(pinSuiveurGauche)>500;
+    bool droite = analogRead(pinSuiveurDroit)>500;
+
     Serial.print("Milieu:");
     Serial.println(milieu);
     Serial.print("Gauche:");
     Serial.println(gauche);
     Serial.print("Droit:");
     Serial.println(droite);
+
+    if(vitesseSuiveurDroit>0.85) vitesseSuiveurDroit = 0.85;
+    if(vitesseSuiveurDroit<0.25) vitesseSuiveurDroit = 0.25;
+    if(vitesseSuiveurGauche>0.85) vitesseSuiveurGauche = 0.85;
+    if(vitesseSuiveurGauche<0.25) vitesseSuiveurGauche = 0.25;
+
+    // Fais accéléré le robot pour ne pas qu'il reste trop bas
+    if(vitesseSuiveurGauche < 0.5 && vitesseSuiveurDroit < 0.5)
+    {
+        vitesseSuiveurGauche *= 1.25;
+        vitesseSuiveurDroit *= 1.25;
+    }
+    
 
     if(milieu && !gauche && !droite){
         if(etatPrecedent == 1) {

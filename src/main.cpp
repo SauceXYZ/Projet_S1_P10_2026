@@ -9,9 +9,11 @@ int vertpin = 48;
 int rougepin = 49;
 int pinsifflet = 47;
 
-int pinSuiveurGauche = 31; //À changer pour la bonne pin
-int pinSuiveurMilieu = 33; //À changer pour la bonne pin
-int pinSuiveurDroit = 35; //À changer pour la bonne pin
+int pinSuiveurGauche = A8; //À changer pour la bonne pin
+int pinSuiveurMilieu = A9; //À changer pour la bonne pin
+int pinSuiveurDroit = A10; //À changer pour la bonne pin
+// les capteurs retourne entre 500 et 800 environ pour des tapes noirs à environ
+//  4 mm (Va falloir tester avec le robot)
 
 float lab_posx = 0;
 float lab_posy = 0;
@@ -40,4 +42,5 @@ void loop()
 {
   Serial.println("Debut du suivi de ligne");
   suivreLaLigne();
+  delay(300);
 }
