@@ -94,7 +94,7 @@ void suivreLaLigne()
     if(vitesseSuiveurGauche>0.85) vitesseSuiveurGauche = 0.85;
     if(vitesseSuiveurGauche<0.25) vitesseSuiveurGauche = 0.25;
 
-    // Fais accéléré le robot pour ne pas qu'il reste trop bas
+    // Fait accélérer le robot pour ne pas qu'il reste trop bas
     if(vitesseSuiveurGauche < 0.5 && vitesseSuiveurDroit < 0.5)
     {
         vitesseSuiveurGauche *= 1.25;
@@ -124,5 +124,11 @@ void suivreLaLigne()
     }
     else if(!milieu && !gauche && droite){
         tournerDroite();
+    }
+    else if(!milieu && !gauche && !droite){
+        avancerDroit();
+    }
+    else if(milieu && gauche && droite){
+        avancerDroit();
     }
 }
