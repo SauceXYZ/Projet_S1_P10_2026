@@ -18,10 +18,8 @@ void setup()
 {
     BoardInit();
     pid_init();
-    Serial.begin(115200);
+    Serial.begin(9600);
 
-    pinMode(vertpin, INPUT);
-    pinMode(rougepin, INPUT);
     ENCODER_Reset(0);
     ENCODER_Reset(1);
     MOTOR_SetSpeed(0, 0);
@@ -31,12 +29,5 @@ void setup()
 
 void loop()
 {
-    static bool fait = false;
-    if (fait) return;
-
-    delay(3000);                 // temps de poser le robot devant le mur
-    bool ok = contourneMur();
-    Serial.print("Contournement reussi: ");
-    Serial.println(ok);
-    fait = true;                 // un seul essai
-}
+    EpreuveQuille();
+} 
