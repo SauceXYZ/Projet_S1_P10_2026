@@ -5,3 +5,5 @@ void correctionVersDroite(void);
 
 void tournerGauche(void);
 void tournerDroite(void);
+
+void testSuiveur(void);

@@ -42,5 +42,6 @@ void loop()
 {
   Serial.println("Debut du suivi de ligne");
   suivreLaLigne();
-  delay(300);
+  //testSuiveur();
+
 }

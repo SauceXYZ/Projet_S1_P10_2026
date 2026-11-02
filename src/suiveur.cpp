@@ -52,9 +52,9 @@ void tournerGauche()
 {
     etatPrecedent = 1;
     nbAugmentation++;
-    vitesseSuiveurDroit += ajoutCorrection * 1.5f;
+    vitesseSuiveurDroit += ajoutCorrection;
     if(vitesseSuiveurDroit > 1.0f) vitesseSuiveurDroit = 1.0f;
-    MOTOR_SetSpeed(0, vitesse_initiale * 0.2f); 
+    MOTOR_SetSpeed(0, vitesse_initiale); 
     MOTOR_SetSpeed(1, vitesseSuiveurDroit);
 
     Serial.println("Tourne à gauche");
@@ -66,10 +66,10 @@ void tournerDroite()
 {
     etatPrecedent = 2;
     nbAugmentation++;
-    vitesseSuiveurGauche += ajoutCorrection * 1.5f;
+    vitesseSuiveurGauche += ajoutCorrection;
     if(vitesseSuiveurGauche > 1.0f) vitesseSuiveurGauche = 1.0f;
     MOTOR_SetSpeed(0, vitesseSuiveurGauche);
-    MOTOR_SetSpeed(1, vitesse_initiale * 0.2f);
+    MOTOR_SetSpeed(1, vitesse_initiale);
 
     Serial.println("Tourne à droite");
     Serial.print("Vitesse gauche: "); Serial.println(vitesseSuiveurGauche);
@@ -78,9 +78,9 @@ void tournerDroite()
 
 void suivreLaLigne()
 {
-    bool milieu = analogRead(pinSuiveurMilieu)>500;
-    bool gauche = analogRead(pinSuiveurGauche)>500;
-    bool droite = analogRead(pinSuiveurDroit)>500;
+    bool milieu = analogRead(pinSuiveurMilieu)>200;
+    bool gauche = analogRead(pinSuiveurGauche)>200;
+    bool droite = analogRead(pinSuiveurDroit)>200;
 
     Serial.print("Milieu:");
     Serial.println(milieu);
@@ -89,13 +89,13 @@ void suivreLaLigne()
     Serial.print("Droit:");
     Serial.println(droite);
 
-    if(vitesseSuiveurDroit>0.85) vitesseSuiveurDroit = 0.85;
+    if(vitesseSuiveurDroit>0.55) vitesseSuiveurDroit = 0.55;
     if(vitesseSuiveurDroit<0.25) vitesseSuiveurDroit = 0.25;
-    if(vitesseSuiveurGauche>0.85) vitesseSuiveurGauche = 0.85;
+    if(vitesseSuiveurGauche>0.55) vitesseSuiveurGauche = 0.55;
     if(vitesseSuiveurGauche<0.25) vitesseSuiveurGauche = 0.25;
 
     // Fait accélérer le robot pour ne pas qu'il reste trop bas
-    if(vitesseSuiveurGauche < 0.5 && vitesseSuiveurDroit < 0.5)
+    if(vitesseSuiveurGauche < 0.3 && vitesseSuiveurDroit < 0.3)
     {
         vitesseSuiveurGauche *= 1.25;
         vitesseSuiveurDroit *= 1.25;
@@ -120,10 +120,11 @@ void suivreLaLigne()
         correctionVersDroite();
     }
     else if(!milieu && gauche && !droite){
-        tournerGauche();
+        tournerDroite();
     }
     else if(!milieu && !gauche && droite){
-        tournerDroite();
+        tournerGauche();
+        
     }
     else if(!milieu && !gauche && !droite){
         avancerDroit();
@@ -131,4 +132,19 @@ void suivreLaLigne()
     else if(milieu && gauche && droite){
         avancerDroit();
     }
+}
+
+void testSuiveur()
+{
+    int milieu = analogRead(pinSuiveurMilieu);
+    int gauche = analogRead(pinSuiveurGauche);
+    int droite = analogRead(pinSuiveurDroit);
+
+    Serial.print("Milieu:");
+    Serial.println(milieu);
+    Serial.print("Gauche:");
+    Serial.println(gauche);
+    Serial.print("Droit:");
+    Serial.println(droite);
+    
 }
