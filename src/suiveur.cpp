@@ -1,11 +1,10 @@
 #include <libRobus.h>
 #include "main.h"
 
-const float vitesse_initiale = 0.5f;
+const float vitesse_initiale = 0.4f;
 float vitesseSuiveurGauche = 0.1f;
 float vitesseSuiveurDroit = 0.1f;
-float ajoutCorrection = 0.1f; 
-float ajoutLongTerme = 0.03f; 
+float ajoutCorrection = 0.03f;
 int etatPrecedent = 0; //0=milieu, 1=gauche, 2=droite
 int nbAugmentation = 0;
 
@@ -26,7 +25,7 @@ void correctionVersGauche()
     nbAugmentation++;
     vitesseSuiveurDroit += ajoutCorrection;
     if (vitesseSuiveurDroit > 1.0f) vitesseSuiveurDroit = 1.0f;
-    MOTOR_SetSpeed(0, vitesse_initiale); 
+    MOTOR_SetSpeed(0, vitesseSuiveurGauche); 
     MOTOR_SetSpeed(1, vitesseSuiveurDroit);
 
     Serial.println("Fait une correction vers la gauche");
@@ -41,7 +40,7 @@ void correctionVersDroite()
     vitesseSuiveurGauche += ajoutCorrection;
     if(vitesseSuiveurGauche > 1.0f) vitesseSuiveurGauche = 1.0f;
     MOTOR_SetSpeed(0, vitesseSuiveurGauche);
-    MOTOR_SetSpeed(1, vitesse_initiale);
+    MOTOR_SetSpeed(1, vitesseSuiveurDroit);
 
     Serial.println("Fait une correction vers la droite");
     Serial.print("Vitesse gauche: "); Serial.println(vitesseSuiveurGauche);
@@ -54,7 +53,7 @@ void tournerGauche()
     nbAugmentation++;
     vitesseSuiveurDroit += ajoutCorrection;
     if(vitesseSuiveurDroit > 1.0f) vitesseSuiveurDroit = 1.0f;
-    MOTOR_SetSpeed(0, vitesse_initiale); 
+    MOTOR_SetSpeed(0, vitesseSuiveurGauche); 
     MOTOR_SetSpeed(1, vitesseSuiveurDroit);
 
     Serial.println("Tourne à gauche");
@@ -69,7 +68,7 @@ void tournerDroite()
     vitesseSuiveurGauche += ajoutCorrection;
     if(vitesseSuiveurGauche > 1.0f) vitesseSuiveurGauche = 1.0f;
     MOTOR_SetSpeed(0, vitesseSuiveurGauche);
-    MOTOR_SetSpeed(1, vitesse_initiale);
+    MOTOR_SetSpeed(1, vitesseSuiveurDroit);
 
     Serial.println("Tourne à droite");
     Serial.print("Vitesse gauche: "); Serial.println(vitesseSuiveurGauche);
@@ -97,8 +96,8 @@ void suivreLaLigne()
     // Fait accélérer le robot pour ne pas qu'il reste trop bas
     if(vitesseSuiveurGauche < 0.3 && vitesseSuiveurDroit < 0.3)
     {
-        vitesseSuiveurGauche *= 1.25;
-        vitesseSuiveurDroit *= 1.25;
+        vitesseSuiveurGauche *= 1.15;
+        vitesseSuiveurDroit *= 1.15;
     }
     
 
@@ -114,10 +113,10 @@ void suivreLaLigne()
         avancerDroit();
     }
     else if(milieu && gauche){
-        correctionVersGauche();
+        correctionVersDroite();
     }
     else if(milieu && droite){
-        correctionVersDroite();
+        correctionVersGauche();
     }
     else if(!milieu && gauche && !droite){
         tournerDroite();
@@ -147,4 +146,5 @@ void testSuiveur()
     Serial.print("Droit:");
     Serial.println(droite);
     
+    delay(50);
 }
