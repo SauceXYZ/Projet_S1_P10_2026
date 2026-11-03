@@ -2,16 +2,67 @@
 #include "main.h"
 #include "pid.h"
 
-#define SEUIL_CAPTEUR 650
+#define SEUIL_CAPTEUR 300
 #define VITESSE_PID 0.2
+#define MILIEU 0
+#define GAUCHE 1
+#define DROITE 2
 
 const float vitesse_initiale = 0.3f;
 float vitesseSuiveurGauche = 0.1f;
 float vitesseSuiveurDroit = 0.1f;
 float ajoutCorrection = 0.02f;
-float correctionTournant = 0.2f;
+float correctionTournant = 0.02f;
 int etatPrecedent = 0; //0=milieu, 1=gauche, 2=droite
 int nbAugmentation = 0;
+int tempsSuiveur[] = {0,0,0};
+bool capteurs[3] = {false,false,false};
+
+
+void verificationLigne()
+{
+    bool resultat[] = {
+        analogRead(pinSuiveurMilieu)>SEUIL_CAPTEUR,
+        analogRead(pinSuiveurGauche)>SEUIL_CAPTEUR,
+        analogRead(pinSuiveurDroit)>SEUIL_CAPTEUR
+    };
+
+    Serial.print("CApteurs");
+    Serial.println(analogRead(pinSuiveurMilieu));
+    Serial.println(analogRead(pinSuiveurGauche));
+    Serial.println(analogRead(pinSuiveurDroit));
+    static bool ancienResultat[3];
+    /*Serial.print("temps:");
+    Serial.println(tempsSuiveur[0]);
+    Serial.println(tempsSuiveur[1]);
+    Serial.println(tempsSuiveur[2]);*/
+
+    for(int i=0; i<3; i++)
+    {
+        if(resultat[i] == ancienResultat[i])
+        {
+            if(millis() - tempsSuiveur[i] > 50)
+            {
+                ancienResultat[i] = resultat[i];
+                capteurs[i] = ancienResultat[i];
+            }
+        }
+        else
+        {
+            tempsSuiveur[i] = millis();
+            ancienResultat[i] = resultat[i];
+        }
+    }
+
+    // Serial.print("Capteurs: ");
+    // Serial.print(ancienResultat[0]);
+    // Serial.print(" ");
+    // Serial.print(ancienResultat[1]);
+    // Serial.print(" ");
+    // Serial.println(ancienResultat[2]);
+
+    
+}
 
 
 void avancerDroit()
@@ -26,10 +77,59 @@ void avancerDroit()
 
 void arreter()
 {
-    etatPrecedent = 0;
-    MOTOR_SetSpeed(0, 0);
-    MOTOR_SetSpeed(1, 0);
-    Serial.println("Arrete le robot");
+    pid_arret();
+}
+
+void placerPourPIB()
+{
+    arreter();
+    MOTOR_SetSpeed(0, 0.1f);
+    MOTOR_SetSpeed(1, 0.1f);
+    delay(200);
+    arreter();
+    while(!capteurs[MILIEU] && !capteurs[GAUCHE] && !capteurs[DROITE])
+    {
+        MOTOR_SetSpeed(0, -0.1f);
+        MOTOR_SetSpeed(1, -0.1f);
+        verificationLigne();
+    }
+    arreter();
+
+    while(analogRead(pinSuiveurGauche)<SEUIL_CAPTEUR)
+    {
+        MOTOR_SetSpeed(1, -0.1f);
+        MOTOR_SetSpeed(0, -0.05f);
+    }
+    arreter();
+
+    while(analogRead(pinSuiveurDroit)<SEUIL_CAPTEUR)
+    {
+        MOTOR_SetSpeed(0, -0.1f);
+        MOTOR_SetSpeed(1, -0.05f);
+    }
+    arreter();
+
+
+
+    while(capteurs[MILIEU] && capteurs[GAUCHE] && capteurs[DROITE])
+    {
+        MOTOR_SetSpeed(0, 0.1f);
+        MOTOR_SetSpeed(1, 0.1f);
+        verificationLigne();
+    }
+    arreter();
+
+    while(analogRead(pinSuiveurGauche)>SEUIL_CAPTEUR)
+    {
+        MOTOR_SetSpeed(1, 0.1f);
+    }
+    arreter();
+
+    while(analogRead(pinSuiveurDroit)>SEUIL_CAPTEUR)
+    {
+        MOTOR_SetSpeed(0, 0.1f);
+    }
+    arreter();
 }
 
 void correctionVersGauche()
@@ -65,7 +165,7 @@ void tournerGauche()
     etatPrecedent = 1;
     //nbAugmentation++;
     vitesseSuiveurDroit += correctionTournant;
-    vitesseSuiveurGauche -= correctionTournant;
+    vitesseSuiveurGauche -= correctionTournant*2.5;
     if(vitesseSuiveurDroit > 1.0f) vitesseSuiveurDroit = 1.0f;
     if(vitesseSuiveurGauche < 0.0f) vitesseSuiveurGauche = 0.0f;
     MOTOR_SetSpeed(0, vitesseSuiveurGauche); 
@@ -81,7 +181,7 @@ void tournerDroite()
     etatPrecedent = 2;
     //nbAugmentation++;
     vitesseSuiveurGauche += correctionTournant;
-    vitesseSuiveurDroit -= correctionTournant;
+    vitesseSuiveurDroit -= correctionTournant*2.5;
     if(vitesseSuiveurGauche > 1.0f) vitesseSuiveurGauche = 1.0f;
     if(vitesseSuiveurDroit < 0.0f) vitesseSuiveurDroit = 0.0f;  
     MOTOR_SetSpeed(0, vitesseSuiveurGauche);
@@ -94,20 +194,18 @@ void tournerDroite()
 
 void suivreLaLigne()
 {
-    bool milieu = analogRead(pinSuiveurMilieu)>SEUIL_CAPTEUR;
-    bool gauche = analogRead(pinSuiveurGauche)>SEUIL_CAPTEUR;
-    bool droite = analogRead(pinSuiveurDroit)>SEUIL_CAPTEUR;
+    verificationLigne();
+
+    Serial.print("Capteurs: ");
+    Serial.print(capteurs[MILIEU]);
+    Serial.print(" ");
+    Serial.print(capteurs[GAUCHE]);
+    Serial.print(" ");
+    Serial.println(capteurs[DROITE]);
 
     float testmilieu = analogRead(pinSuiveurMilieu);
     float testgauche = analogRead(pinSuiveurGauche);
     float testdroite = analogRead(pinSuiveurDroit);
-
-    Serial.print("Milieu:");
-    Serial.println(milieu);
-    Serial.print("Gauche:");
-    Serial.println(gauche);
-    Serial.print("Droit:");
-    Serial.println(droite);
 /*
     Serial.print("Test milieu:");
     Serial.println(testmilieu);
@@ -116,7 +214,6 @@ void suivreLaLigne()
     Serial.print("Test droite:");
     Serial.println(testdroite);
 */
-    //delay(250);
 
     //return ;
     if(vitesseSuiveurDroit>0.5) vitesseSuiveurDroit = 0.5;
@@ -132,7 +229,8 @@ void suivreLaLigne()
     //}
     
 
-    if(milieu && !gauche && !droite){
+    if((capteurs[MILIEU] && !capteurs[GAUCHE] && !capteurs[DROITE]) || (etatPrecedent == 0 && !capteurs[GAUCHE]&& !capteurs[DROITE]&& !capteurs[MILIEU])){
+        Serial.println("Avance en ligne droite");
         if(etatPrecedent == 1) {
             vitesseSuiveurDroit = vitesse_initiale;//-= ajoutCorrection * nbAugmentation;
         }
@@ -143,29 +241,34 @@ void suivreLaLigne()
         nbAugmentation = 0;
         avancerDroit();
     }
-    else if(milieu && gauche && !droite){
+    else if(capteurs[MILIEU] && capteurs[GAUCHE] && !capteurs[DROITE]){
+        Serial.println("Correction vers la gauche");
         correctionVersDroite();
     }
-    else if(milieu && droite && !gauche){
+    else if(capteurs[MILIEU] && capteurs[GAUCHE] && !capteurs[DROITE]){
+        Serial.println("Correction vers la droite");
         correctionVersGauche();
     }
-    else if(!milieu && gauche && !droite){
+    else if(!capteurs[MILIEU] && capteurs[GAUCHE] && !capteurs[DROITE]){
+        Serial.println("Tourne à gauche");
         tournerDroite();
     }
-    else if(!milieu && !gauche && droite){
+    else if(!capteurs[MILIEU] && !capteurs[GAUCHE] && capteurs[DROITE]){
+        Serial.println("Tourne à droite");
         tournerGauche();
         
     }
-    else if(!milieu && !gauche && !droite){
-        //arreter();
+    else if(!capteurs[MILIEU] && !capteurs[GAUCHE] && !capteurs[DROITE]){
+        arreter();
     }
-    else if(milieu && gauche && droite){
-        while(analogRead(pinSuiveurMilieu)>SEUIL_CAPTEUR && analogRead(pinSuiveurDroit)>SEUIL_CAPTEUR 
-        && analogRead(pinSuiveurGauche)>SEUIL_CAPTEUR)
-        {
-            MOTOR_SetSpeed(1,vitesse_initiale);
-            MOTOR_SetSpeed(0,vitesse_initiale);
-        }
+    else if(capteurs[MILIEU] && capteurs[GAUCHE] && capteurs[DROITE]){
+        placerPourPIB();
+        // while(analogRead(pinSuiveurMilieu)>SEUIL_CAPTEUR && analogRead(pinSuiveurDroit)>SEUIL_CAPTEUR 
+        // && analogRead(pinSuiveurGauche)>SEUIL_CAPTEUR)
+        // {
+        //     MOTOR_SetSpeed(1,vitesse_initiale);
+        //     MOTOR_SetSpeed(0,vitesse_initiale);
+        // }
         bool atteindfin = false;
         while(!atteindfin)
         {
@@ -182,18 +285,19 @@ void suivreLaLigne()
 
             }
                 */
-            if(analogRead(pinSuiveurMilieu)>SEUIL_CAPTEUR && analogRead(pinSuiveurDroit)>SEUIL_CAPTEUR 
-            && analogRead(pinSuiveurGauche)>SEUIL_CAPTEUR)
+            if(capteurs[MILIEU] || capteurs[DROITE] || capteurs[GAUCHE])
             {
                 atteindfin = true;
             }
             pid_avance(VITESSE_PID);
+            verificationLigne();
         }
-        while(analogRead(pinSuiveurMilieu)>SEUIL_CAPTEUR && analogRead(pinSuiveurDroit)>SEUIL_CAPTEUR 
-        && analogRead(pinSuiveurGauche)>SEUIL_CAPTEUR)
+        while(capteurs[MILIEU] && capteurs[GAUCHE] && capteurs[DROITE] )
         {
             MOTOR_SetSpeed(1,vitesse_initiale);
             MOTOR_SetSpeed(0,vitesse_initiale);
+            verificationLigne();
+            
         }
 
     }
