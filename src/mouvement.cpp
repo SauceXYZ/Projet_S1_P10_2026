@@ -36,9 +36,9 @@ char grilleMap[11][3] =
 int32_t encodeur_1_precedent = 0;
 
 static void faitFace(int orientation);
-static void tourne(int directionDemande);
+void tourne(int directionDemande);
 
-static bool avanceImpulsions(int32_t distance, bool versCentre, bool finDeCase)
+bool avanceImpulsions(int32_t distance, bool versCentre, bool finDeCase)
 {
     const int32_t debut = ENCODER_Read(1);
     if (AVANCE_V3_DEBUG)
