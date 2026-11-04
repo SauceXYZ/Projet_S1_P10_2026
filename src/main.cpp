@@ -90,6 +90,14 @@ void loop()
       break;
     }
   }
+  while(etat == 2)
+  {
+    if(receptionIR() == CONTINUE_IR)
+    {
+      etat = 1;
+      break;
+    }
+  }
   while(etat == 1)
   {
     lireRGB(rouge, vert, bleu, luminosite);
