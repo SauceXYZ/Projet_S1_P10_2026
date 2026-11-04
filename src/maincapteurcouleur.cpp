@@ -39,32 +39,20 @@ void setup()
     }
 }
 
-void allumerLED(int brocheLED)
-{
-    digitalWrite(brocheLED, HIGH);
-    delay(10000);
-    digitalWrite(brocheLED, LOW);
-}
+
 
 
 
 void loop()
 {
-    int rouge;
-    int vert;
-    int bleu;
-    int luminosite;
 
-   lireRGB(rouge, vert, bleu, luminosite);
 
-    bool jaune, vertclair, bleufonce, rose, orange;
 
-    detecterCouleur(jaune, vertclair, bleufonce, rose, orange);
+
 
     
     if (jaune)
 {
-    allumerLED(LED_JAUNE);
 }
 else
 {

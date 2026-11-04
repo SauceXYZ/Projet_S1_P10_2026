@@ -21,6 +21,7 @@ int etatPrecedent = 0; //0=milieu, 1=gauche, 2=droite
 int nbAugmentation = 0;
 unsigned long tempsSuiveur[] = {0,0,0};
 bool capteurs[3] = {false,false,false};
+bool passerTrou = false;
 
 
 void waitInput()
@@ -332,7 +333,7 @@ void suivreLaLigne()
             verificationLigne();
             
         }
-
+        passerTrou = true;
     }
 }
 
@@ -350,4 +351,12 @@ void testSuiveur()
     Serial.println(droite);
     
     delay(50);
+}
+
+void trou()
+{
+    while(!passerTrou)
+    {
+        suivreLaLigne();
+    }
 }
