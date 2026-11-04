@@ -88,9 +88,27 @@ void loop()
     {
       etat = 1;
       AX_BuzzerON();
-      delay(250);
+      delay(100);
+      AX_BuzzerOFF();
+      delay(25);
+      AX_BuzzerON();
+      delay(100);
       AX_BuzzerOFF();
       break;
+    }
+    else if(receptionIR() == CONTINUE_IR)
+    {
+      AX_BuzzerON();
+      delay(100);
+      AX_BuzzerOFF();
+      delay(25);
+      AX_BuzzerON();
+      delay(100);
+      AX_BuzzerOFF();
+      delay(25);
+      AX_BuzzerON();
+      delay(100);
+      AX_BuzzerOFF();
     }
   }
   while(etat == 2)
@@ -101,10 +119,25 @@ void loop()
       AX_BuzzerON();
       delay(100);
       AX_BuzzerOFF();
+      delay(25);
+      AX_BuzzerON();
+      delay(100);
+      AX_BuzzerOFF();
+      delay(25);
       AX_BuzzerON();
       delay(100);
       AX_BuzzerOFF();
       break;
+    }
+    else if(receptionIR() == START_IR)
+    {
+      AX_BuzzerON();
+      delay(100);
+      AX_BuzzerOFF();
+      delay(25);
+      AX_BuzzerON();
+      delay(100);
+      AX_BuzzerOFF();
     }
   }
   while(etat == 1)
