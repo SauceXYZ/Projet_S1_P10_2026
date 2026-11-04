@@ -67,7 +67,7 @@ void setup()
 void allumerLED(int brocheLED)
 {
   pid_arret();
-    digitalWrite(brocheLED, HIGH);
+    digitalWrite(brocheLED, LOW);
     // delay(10000);
     // digitalWrite(brocheLED, LOW);
 }

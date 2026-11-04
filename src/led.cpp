@@ -13,7 +13,7 @@ void eteindreLed()
   {
     if(millis() - ledRoseDelai >= 10000)
     {
-      digitalWrite(LED_ROSE, LOW);
+      digitalWrite(LED_ROSE, HIGH);
       ledRoseDelai = 0;
     }
   }
@@ -21,7 +21,7 @@ void eteindreLed()
   {
     if(millis() - ledBleuDelai >= 10000)
     {
-      digitalWrite(LED_BLEU, LOW);
+      digitalWrite(LED_BLEU, HIGH);
       ledBleuDelai = 0;
     }
   }
@@ -29,7 +29,7 @@ void eteindreLed()
   {
     if(millis() - ledJauneDelai >= 10000)
     {
-      digitalWrite(LED_JAUNE, LOW);
+      digitalWrite(LED_JAUNE, HIGH);
       ledJauneDelai = 0;
     }
   }
@@ -37,7 +37,7 @@ void eteindreLed()
   {
     if(millis() - ledVertDelai >= 10000)
     {
-      digitalWrite(LED_VERT, LOW);
+      digitalWrite(LED_VERT, HIGH);
       ledVertDelai = 0;
     }
   }
@@ -45,7 +45,7 @@ void eteindreLed()
   {
     if(millis() - ledOrangeDelai >= 10000)
     {
-      digitalWrite(LED_ORANGE, LOW);
+      digitalWrite(LED_ORANGE, HIGH);
       ledOrangeDelai = 0;
     }
   }
