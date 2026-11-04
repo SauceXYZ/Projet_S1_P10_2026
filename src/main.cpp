@@ -21,6 +21,8 @@ float lab_posy = 0;
 
 int direction = FACE_AVANT;
 
+int etat = 0;
+
 void setup()
 {
   BoardInit();
@@ -41,10 +43,15 @@ void setup()
 
 void loop()
 {
+  while(etat == 0)
+  {
+    
+  }
+  while(etat == 1)
+  {
+
+    suivreLaLigne();
+
+  }
   Serial.println("Debut du suivi de ligne");
-  suivreLaLigne();
-  //testSuiveur();
-
-
-    EpreuveQuille();
 } 
