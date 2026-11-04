@@ -46,11 +46,11 @@ void setup()
   pinMode(LED_ROSE, OUTPUT);
   pinMode(LED_ORANGE, OUTPUT);
 
-  digitalWrite(LED_JAUNE, LOW);
-  digitalWrite(LED_VERT, LOW);
-  digitalWrite(LED_BLEU, LOW);
-  digitalWrite(LED_ROSE, LOW);
-  digitalWrite(LED_ORANGE, LOW);
+  digitalWrite(LED_JAUNE, HIGH);
+  digitalWrite(LED_VERT, HIGH);
+  digitalWrite(LED_BLEU, HIGH);
+  digitalWrite(LED_ROSE, HIGH);
+  digitalWrite(LED_ORANGE, HIGH);
 
   pinMode(vertpin, INPUT);
   pinMode(rougepin, INPUT);
