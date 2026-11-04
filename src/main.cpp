@@ -4,6 +4,7 @@
 #include "mouvement.h"
 #include "contourne_mur.h"
 #include "suiveur.h"
+#include "quille.h"
 
 int vertpin = 48;
 int rougepin = 49;
@@ -44,4 +45,6 @@ void loop()
   suivreLaLigne();
   //testSuiveur();
 
-}
+
+    EpreuveQuille();
+} 

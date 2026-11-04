@@ -26,10 +26,10 @@ bool contourneMur(void)
         delay(100);
 
         int32_t avant = ENCODER_Read(1);
-        bool ok = avanceImpulsions(cmEnImpulsions(50), false, false);
+        bool coteeLibre = avanceImpulsions(cmEnImpulsions(50), false, false);
         decalageImpulsions += ENCODER_Read(1) - avant;
         decalages++;
-        if (!ok) return false;      // obstacle sur le cote
+        if (!coteeLibre) return false;      // obstacle sur le cote
 
         tourne(TOURNE_GAUCHE);      // refait face a la direction initiale
         delay(100);
