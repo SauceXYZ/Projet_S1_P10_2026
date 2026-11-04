@@ -17,7 +17,7 @@ float vitesseSuiveurGauche = 0.1f;
 float vitesseSuiveurDroit = 0.1f;
 float ajoutCorrection = 0.02f;
 float correctionTournant = 0.02f;
-int etatPrecedent = 0; //0=milieu, 1=gauche, 2=droite
+int etatPrecedent = 2; //0=milieu, 1=gauche, 2=droite
 int nbAugmentation = 0;
 unsigned long tempsSuiveur[] = {0,0,0};
 bool capteurs[3] = {false,false,false};
@@ -48,10 +48,11 @@ void verificationLigne()
         analogRead(pinSuiveurDroit)>SEUIL_CAPTEUR
     };
 
-    // Serial.print("CApteurs");
-    // Serial.println(analogRead(pinSuiveurMilieu));
-    // Serial.println(analogRead(pinSuiveurGauche));
-    // Serial.println(analogRead(pinSuiveurDroit));
+    Serial.print("CApteurs");
+    Serial.println(analogRead(pinSuiveurMilieu));
+    Serial.println(analogRead(pinSuiveurGauche));
+    Serial.println(analogRead(pinSuiveurDroit));
+    //delay(500);
     static bool ancienResultat[3];
     /*Serial.print("temps:");
     Serial.println(tempsSuiveur[0]);
@@ -279,9 +280,10 @@ void suivreLaLigne()
 */
 
     //return ;
-    
+    Serial.print("A");
     clampVitesse();
-    if((capteurs[MILIEU] && !capteurs[GAUCHE] && !capteurs[DROITE]) || (etatPrecedent == 0 && !capteurs[GAUCHE]&& !capteurs[DROITE]&& !capteurs[MILIEU])){
+    if((capteurs[MILIEU] && !capteurs[GAUCHE] && !capteurs[DROITE]) || (etatPrecedent == 0 && !capteurs[GAUCHE]&& !capteurs[DROITE]&& !capteurs[MILIEU]))
+    {
         //Serial.println("Avance en ligne droite");
         if(etatPrecedent == 1) {
             vitesseSuiveurDroit = vitesse_initiale;//-= ajoutCorrection * nbAugmentation;

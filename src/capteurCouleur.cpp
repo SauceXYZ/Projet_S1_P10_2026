@@ -24,6 +24,11 @@ void lireRGB(int &rouge,int &vert,int &bleu, int &luminosite)
     bleu = b;
     luminosite = c;
 
+    // Serial.print("R: "); Serial.print(rouge);
+    // Serial.print(" G: "); Serial.print(vert);  
+    // Serial.print(" B: "); Serial.print(bleu);
+    // Serial.print(" C: "); Serial.println(luminosite);
+
 }
 
 void detecterCouleur(bool &jaune, bool &vertclair, bool &bleufonce, bool &rose, bool &orange)
@@ -42,7 +47,7 @@ void detecterCouleur(bool &jaune, bool &vertclair, bool &bleufonce, bool &rose, 
     rose = false;
     orange = false;
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 2; i++)
     {
         lireRGB(rouge, vert, bleu, luminosite);
 
@@ -66,13 +71,24 @@ void detecterCouleur(bool &jaune, bool &vertclair, bool &bleufonce, bool &rose, 
         {
             compteurorange++;
         }
+        else
+        {
+            //aucune couleur détectée
+            break;
+        }
     }
 
-    jaune = (compteurjaune == 3);
-    vertclair = (compteurvertclair == 3);
-    bleufonce = (compteurbleufonce == 3);
-    rose = (compteurrose == 3);
-    orange = (compteurorange == 3);
+    jaune = (compteurjaune == 2);
+    vertclair = (compteurvertclair == 2);
+    bleufonce = (compteurbleufonce == 2);
+    rose = (compteurrose == 2);
+    orange = (compteurorange == 2);
+
+    // if(jaune) Serial.println("Jaune");
+    // else if(vertclair) Serial.println("Vert");
+    // else if(bleufonce) Serial.println("Bleu");
+    // else if(rose) Serial.println("Rose");
+    // else if(orange) Serial.println("Orange");
 }
 
 bool estjaune(int rouge,int vert,int bleu)
@@ -89,8 +105,8 @@ bool estjaune(int rouge,int vert,int bleu)
 bool estvert(int rouge,int vert,int bleu)
 {
     bool estvert = false;
-    if (rouge >= 164 && rouge <= 173 && vert  >= 225 && vert  <= 290
-        && bleu  >= 175 && bleu  <= 222)
+    if (rouge >= 160 && rouge <= 173 && vert  >= 220 && vert  <= 290
+        && bleu  >= 170 && bleu  <= 222)
     {
         estvert = true;
     }
@@ -100,8 +116,8 @@ bool estvert(int rouge,int vert,int bleu)
   bool estbleu(int rouge,int vert,int bleu)
 {
     bool estbleu = false;
-    if (rouge >= 115 && rouge <= 124 && vert  >= 175 && vert  <= 189
-        && bleu  >= 159 && bleu  <= 169)
+    if (rouge >= 110 && rouge <= 124 && vert  >= 175 && vert  <= 189
+        && bleu  >= 155 && bleu  <= 169)
     {
         estbleu = true;
     }
@@ -124,8 +140,8 @@ bool estvert(int rouge,int vert,int bleu)
   bool estorange(int rouge,int vert,int bleu)
 {
     bool estorange = false;
-    if (rouge >= 201 && rouge <= 211 && vert  >= 186 && vert  <= 196
-        && bleu  >= 122 && bleu  <= 131)
+    if (rouge >= 201 && rouge <= 211 && vert  >= 186 && vert  <= 200
+        && bleu  >= 122 && bleu  <= 135)
     {
         estorange = true;
     }

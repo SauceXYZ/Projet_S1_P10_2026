@@ -14,6 +14,15 @@ int vertpin = 48;
 int rougepin = 49;
 int pinsifflet = 47;
 
+#define TEMPS_DETECTION_COULEUR 500
+
+#define ACTIVE_EPREUVE_MURE false
+#define ACTIVE_EPREUVE_TROUE false
+#define ACTIVE_EPREUVE_STOP false
+#define ACTIVE_EPREUVE_QUILLE false
+#define ACTIVE_EPREUVE_VERRE false
+#define ACTIVE_SUIVREUR true
+
 
 int pinSuiveurGauche = A8; //À changer pour la bonne pin
 int pinSuiveurMilieu = A9; //À changer pour la bonne pin
@@ -60,7 +69,7 @@ void setup()
   ENCODER_Reset(0);
   ENCODER_Reset(1);
 
-  initialiserServos();
+  //initialiserServos();
 
   MOTOR_SetSpeed(0, 0);
   MOTOR_SetSpeed(1, 0);
@@ -94,7 +103,12 @@ void loop()
   int vert;
   int bleu;
   int luminosite;
-  bool jaune, vertclair, bleufonce, rose, orange;
+  bool jaune = false;
+  bool vertclair = false;
+  bool bleufonce = false;
+  bool rose = false;
+  bool orange = false;
+  static unsigned long oldTempsCouleur = 0;
 
   eteindreLed();
 
@@ -126,9 +140,20 @@ void loop()
   }
   while(etat == 1)
   {
-    lireRGB(rouge, vert, bleu, luminosite);
-    detecterCouleur(jaune, vertclair, bleufonce, rose, orange);
-    if(jaune && !murEpreuve)
+    //lireRGB(rouge, vert, bleu, luminosite);
+    if(millis() - oldTempsCouleur > TEMPS_DETECTION_COULEUR)
+    {
+      oldTempsCouleur = millis();
+      detecterCouleur(jaune, vertclair, bleufonce, rose, orange);
+    }
+    // if(jaune || vertclair || bleufonce || rose || orange) Serial.print("Couleur detectee: ");
+    // if(jaune) {Serial.println("Jaune"); jaune = false;}
+    // else if(vertclair) {Serial.println("Vert"); vertclair = false;}
+    // else if(bleufonce) {Serial.println("Bleu"); bleufonce = false;}
+    // else if(rose) {Serial.println("Rose"); rose = false;}
+    // else if(orange) {Serial.println("Orange"); orange = false;}
+    //continue;
+    if(jaune && !murEpreuve && ACTIVE_EPREUVE_MURE)
     {
         ledJauneDelai = millis();
         allumerLED(LED_JAUNE);
@@ -137,7 +162,7 @@ void loop()
         murEpreuve = true;
       
     }
-    else if(vertclair && !trouEpreuve)
+    else if(vertclair && !trouEpreuve && ACTIVE_EPREUVE_TROUE)
     {
         ledVertDelai = millis();
         allumerLED(LED_VERT);
@@ -146,7 +171,7 @@ void loop()
         trouEpreuve = true;
       
     }
-    else if(bleufonce && !stopEpreuve)
+    else if(bleufonce && !stopEpreuve && ACTIVE_EPREUVE_STOP)
     {
         ledBleuDelai = millis();
         allumerLED(LED_BLEU);
@@ -156,7 +181,7 @@ void loop()
         break;
       
     }
-    else if(rose && !quilleEpreuve)
+    else if(rose && !quilleEpreuve && ACTIVE_EPREUVE_QUILLE)
     {
         ledRoseDelai = millis();
         allumerLED(LED_ROSE);
@@ -165,7 +190,7 @@ void loop()
         quilleEpreuve = true;
       
     }
-    else if(orange && !verreEpreuve)
+    else if(orange && !verreEpreuve && ACTIVE_EPREUVE_VERRE)
     {
         ledOrangeDelai = millis();
         allumerLED(LED_ORANGE);
@@ -184,7 +209,10 @@ void loop()
     }
     else
     {
-      suivreLaLigne();
+        if(ACTIVE_SUIVREUR)
+        {
+            suivreLaLigne();
+        }
     }
 
   }
