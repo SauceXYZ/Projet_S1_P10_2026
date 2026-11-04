@@ -87,6 +87,9 @@ void loop()
     if(receptionIR() == START_IR)
     {
       etat = 1;
+      AX_BuzzerON();
+      delay(250);
+      AX_BuzzerOFF();
       break;
     }
   }
@@ -95,6 +98,12 @@ void loop()
     if(receptionIR() == CONTINUE_IR)
     {
       etat = 1;
+      AX_BuzzerON();
+      delay(100);
+      AX_BuzzerOFF();
+      AX_BuzzerON();
+      delay(100);
+      AX_BuzzerOFF();
       break;
     }
   }
