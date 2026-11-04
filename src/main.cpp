@@ -30,12 +30,5 @@ void setup()
 
 void loop()
 {
-    static bool fait = false;
-    if (fait) return;
-
-    delay(3000);                 // temps de poser le robot devant le mur
-    bool ok = contourneMur();
-    Serial.print("Contournement reussi: ");
-    Serial.println(ok);
-    fait = true;                 // un seul essai
+    contourneMur();
 }
