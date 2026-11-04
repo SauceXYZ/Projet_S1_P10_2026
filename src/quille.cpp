@@ -24,6 +24,13 @@ void detection(uint8_t capteur1) {
             pid_tourne(TOURNE_DROITE, 5);
         }
     }
+    if(detection == true) {
+        //Permet au robot de tourner 3 fois a droite pour etre en ligne avec le capteur
+        //Augmenter les bornes de i pour avoir plus de degrées
+        for(int i = 0; i < 9; i++) {
+            pid_tourne(TOURNE_DROITE, 5);
+        }
+    }
 };
 
 static int32_t cmEnImpulsions(float cm){
