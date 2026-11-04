@@ -8,7 +8,7 @@
 #include "capteurCouleur.h"
 #include "receptionIR.h"
 #include "led.h"
-
+#include "robotVerre.h"
 
 int vertpin = 48;
 int rougepin = 49;
@@ -26,7 +26,7 @@ float lab_posy = 0;
 
 int direction = FACE_AVANT;
 
-int etat = 0;
+int etat = 1;
 short int compteurEpreuve = 0;
 bool verreEpreuve = false;
 bool murEpreuve = false;
@@ -59,6 +59,9 @@ void setup()
   pinMode(pinSuiveurDroit, INPUT);
   ENCODER_Reset(0);
   ENCODER_Reset(1);
+
+  initialiserServos();
+
   MOTOR_SetSpeed(0, 0);
   MOTOR_SetSpeed(1, 0);
   Serial.println("Initialisation complete");
@@ -166,7 +169,7 @@ void loop()
     {
         ledOrangeDelai = millis();
         allumerLED(LED_ORANGE);
-        //Verre
+        executerRamassageVerre();
 
         verreEpreuve = true;
       
