@@ -6,6 +6,7 @@
 #include "suiveur.h"
 #include "quille.h"
 #include "capteurCouleur.h"
+#include "receptionIR.h"
 
 int LED_JAUNE = 31;
 int LED_VERT = 33;
@@ -78,7 +79,11 @@ void loop()
 
   while(etat == 0)
   {
-    
+    if(receptionIR() == START_IR)
+    {
+      etat = 1;
+      break;
+    }
   }
   while(etat == 1)
   {
