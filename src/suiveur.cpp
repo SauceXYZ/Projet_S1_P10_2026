@@ -26,7 +26,7 @@ bool passerTrou = false;
 
 void waitInput()
 {
-    while(!Serial.read() == '\n')
+    while(!(Serial.read() == '\n'))
     {
         delay(10);
     }
@@ -266,9 +266,9 @@ void suivreLaLigne()
     // Serial.print(" ");
     // Serial.println(capteurs[DROITE]);
 
-    float testmilieu = analogRead(pinSuiveurMilieu);
-    float testgauche = analogRead(pinSuiveurGauche);
-    float testdroite = analogRead(pinSuiveurDroit);
+    // float testmilieu = analogRead(pinSuiveurMilieu);
+    // float testgauche = analogRead(pinSuiveurGauche);
+    // float testdroite = analogRead(pinSuiveurDroit);
 /*
     Serial.print("Test milieu:");
     Serial.println(testmilieu);
