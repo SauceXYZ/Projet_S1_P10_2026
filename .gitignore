@@ -3,8 +3,13 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
-<<<<<<< HEAD
-=======
-**/.DStore
-.DStore
->>>>>>> c8d042de1cc3196e943b5a26698e10f5bb94e612
+
+# Fichiers inutiles de la bibliothèque TCS34725
+lib/Grove_I2C_Color_Sensor_TCS3472-master/.DS_Store
+lib/Grove_I2C_Color_Sensor_TCS3472-master/.gitlab-ci.yml
+lib/Grove_I2C_Color_Sensor_TCS3472-master/.travis.yml
+lib/Grove_I2C_Color_Sensor_TCS3472-master/.github/
+lib/Grove_I2C_Color_Sensor_TCS3472-master/examples/
+.pio/build/project.checksum
+.vscode/c_cpp_properties.json
+.vscode/launch.json

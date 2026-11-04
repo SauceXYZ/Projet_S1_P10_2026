@@ -36,9 +36,9 @@ char grilleMap[11][3] =
 int32_t encodeur_1_precedent = 0;
 
 static void faitFace(int orientation);
-static void tourne(int directionDemande);
+void tourne(int directionDemande);
 
-static bool avanceImpulsions(int32_t distance, bool versCentre, bool finDeCase)
+bool avanceImpulsions(int32_t distance, bool versCentre, bool finDeCase)
 {
     const int32_t debut = ENCODER_Read(1);
     if (AVANCE_V3_DEBUG)
@@ -58,11 +58,11 @@ static bool avanceImpulsions(int32_t distance, bool versCentre, bool finDeCase)
     while (ENCODER_Read(1) - debut < distance)
     {
         float restant_cm = (distance - (ENCODER_Read(1) - debut)) * CM_PAR_IMPULSION_1;
-        if (!digitalRead(vertpin) || !digitalRead(rougepin))
+        /*if (!digitalRead(vertpin) || !digitalRead(rougepin))
         {
             if (!versCentre || restant_cm > TOLERANCE_CASE_CM) break;
             obstacleFinCase = true;
-        }
+        }*/
         anticipation_cm = pid_distanceArret();
         float maximumAnticipation = distance * CM_PAR_IMPULSION_1 / 4.0f;
         if (anticipation_cm > maximumAnticipation) anticipation_cm = maximumAnticipation;
