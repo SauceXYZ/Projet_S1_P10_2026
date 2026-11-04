@@ -16,6 +16,11 @@ int LED_ORANGE = 39;
 int vertpin = 48;
 int rougepin = 49;
 int pinsifflet = 47;
+int ledBleuDelai = 0;
+int ledJauneDelai = 0;
+int ledVertDelai = 0;
+int ledRoseDelai = 0;
+int ledOrangeDelai = 0;
 
 int pinSuiveurGauche = A8; //À changer pour la bonne pin
 int pinSuiveurMilieu = A9; //À changer pour la bonne pin
@@ -70,8 +75,52 @@ void allumerLED(int brocheLED)
 {
   pid_arret();
     digitalWrite(brocheLED, HIGH);
-    delay(10000);
-    digitalWrite(brocheLED, LOW);
+    // delay(10000);
+    // digitalWrite(brocheLED, LOW);
+}
+
+void eteindreLed()
+{
+  if(ledRoseDelai != 0)
+  {
+    if(millis() - ledRoseDelai >= 10000)
+    {
+      digitalWrite(LED_ROSE, LOW);
+      ledRoseDelai = 0;
+    }
+  }
+  if(ledBleuDelai != 0)
+  {
+    if(millis() - ledBleuDelai >= 10000)
+    {
+      digitalWrite(LED_BLEU, LOW);
+      ledBleuDelai = 0;
+    }
+  }
+  if(ledJauneDelai != 0)
+  {
+    if(millis() - ledJauneDelai >= 10000)
+    {
+      digitalWrite(LED_JAUNE, LOW);
+      ledJauneDelai = 0;
+    }
+  }
+  if(ledVertDelai != 0)
+  {
+    if(millis() - ledVertDelai >= 10000)
+    {
+      digitalWrite(LED_VERT, LOW);
+      ledVertDelai = 0;
+    }
+  }
+  if(ledOrangeDelai != 0)
+  {
+    if(millis() - ledOrangeDelai >= 10000)
+    {
+      digitalWrite(LED_ORANGE, LOW);
+      ledOrangeDelai = 0;
+    }
+  }
 }
 
 void loop()
@@ -81,6 +130,8 @@ void loop()
   int bleu;
   int luminosite;
   bool jaune, vertclair, bleufonce, rose, orange;
+
+  eteindreLed();
 
   while(etat == 0)
   {
@@ -146,6 +197,7 @@ void loop()
     detecterCouleur(jaune, vertclair, bleufonce, rose, orange);
     if(jaune && !murEpreuve)
     {
+        ledJauneDelai = millis();
         allumerLED(LED_JAUNE);
         //Mur
         contourneMur();
@@ -154,6 +206,7 @@ void loop()
     }
     else if(vertclair && !trouEpreuve)
     {
+        ledVertDelai = millis();
         allumerLED(LED_VERT);
         //Trou
         trou();
@@ -162,6 +215,7 @@ void loop()
     }
     else if(bleufonce && !stopEpreuve)
     {
+        ledBleuDelai = millis();
         allumerLED(LED_BLEU);
         //attente
         etat = 2;
@@ -171,6 +225,7 @@ void loop()
     }
     else if(rose && !quilleEpreuve)
     {
+        ledRoseDelai = millis();
         allumerLED(LED_ROSE);
         //quille
         EpreuveQuille();
@@ -179,6 +234,7 @@ void loop()
     }
     else if(orange && !verreEpreuve)
     {
+        ledOrangeDelai = millis();
         allumerLED(LED_ORANGE);
         //Verre
 
