@@ -29,6 +29,11 @@ int direction = FACE_AVANT;
 
 int etat = 0;
 short int compteurEpreuve = 0;
+bool verreEpreuve = false;
+bool murEpreuve = false;
+bool stopEpreuve = false;
+bool quilleEpreuve = false;
+bool trouEpreuve = false;
 
 void setup()
 {
@@ -84,52 +89,59 @@ void loop()
   {
     lireRGB(rouge, vert, bleu, luminosite);
     detecterCouleur(jaune, vertclair, bleufonce, rose, orange);
-    if(jaune)
+    if(jaune && !murEpreuve)
     {
-      allumerLED(LED_JAUNE);
-      //Mur
-      contourneMur();
-      compteurEpreuve++;
-    }
-    else if(vertclair)
-    {
-      allumerLED(LED_VERT);
-      //Trou
-      trou();
-      compteurEpreuve++;
+        allumerLED(LED_JAUNE);
+        //Mur
+        contourneMur();
+        murEpreuve = true;
       
     }
-    else if(bleufonce)
+    else if(vertclair && !trouEpreuve)
     {
-      allumerLED(LED_BLEU);
-      //attente
-      etat = 0;
-      compteurEpreuve++;
-      break;
-    }
-    else if(rose)
-    {
-      allumerLED(LED_ROSE);
-      //quille
-      EpreuveQuille();
-      compteurEpreuve++;
-    }
-    else if(orange)
-    {
-      allumerLED(LED_ORANGE);
-      //Verre
+        allumerLED(LED_VERT);
+        //Trou
+        trou();
+        trouEpreuve = true;
       
-      compteurEpreuve++;
     }
-    if(compteurEpreuve >= 5)
+    else if(bleufonce && !stopEpreuve)
+    {
+        allumerLED(LED_BLEU);
+        //attente
+        etat = 2;
+        stopEpreuve = true;
+        break;
+      
+    }
+    else if(rose && !quilleEpreuve)
+    {
+        allumerLED(LED_ROSE);
+        //quille
+        EpreuveQuille();
+        quilleEpreuve = true;
+      
+    }
+    else if(orange && !verreEpreuve)
+    {
+        allumerLED(LED_ORANGE);
+        //Verre
+
+        verreEpreuve = true;
+      
+    }
+    else if(verreEpreuve && murEpreuve && stopEpreuve && quilleEpreuve && trouEpreuve)
     {
       pid_arret();
       //déposer le verre
 
-      etat = 2;
+      etat = 3;
       break;
     }
-    suivreLaLigne();
+    else
+    {
+      suivreLaLigne();
+    }
 
   }
   Serial.println("Debut du suivi de ligne");
