@@ -78,8 +78,8 @@ void detecterCouleur(bool &jaune, bool &vertclair, bool &bleufonce, bool &rose, 
 bool estjaune(int rouge,int vert,int bleu)
 {
     bool estjaune = false;
-    if (rouge >= 232 && rouge <= 246 && vert  >= 259 && vert  <= 274
-        && bleu  >= 146 && bleu  <= 156)
+    if (rouge >= 213 && rouge <= 219 && vert  >= 241 && vert  <= 248
+        && bleu  >= 142 && bleu  <= 146)
     {
         estjaune = true;
     }
@@ -89,8 +89,8 @@ bool estjaune(int rouge,int vert,int bleu)
 bool estvert(int rouge,int vert,int bleu)
 {
     bool estvert = false;
-    if (rouge >= 200 && rouge <= 204 && vert  >= 286 && vert  <= 290
-        && bleu  >= 218 && bleu  <= 222)
+    if (rouge >= 164 && rouge <= 173 && vert  >= 225 && vert  <= 290
+        && bleu  >= 175 && bleu  <= 222)
     {
         estvert = true;
     }
@@ -100,8 +100,8 @@ bool estvert(int rouge,int vert,int bleu)
   bool estbleu(int rouge,int vert,int bleu)
 {
     bool estbleu = false;
-    if (rouge >= 117 && rouge <= 129 && vert  >= 189 && vert  <= 200
-        && bleu  >= 174 && bleu  <= 190)
+    if (rouge >= 115 && rouge <= 124 && vert  >= 175 && vert  <= 189
+        && bleu  >= 159 && bleu  <= 169)
     {
         estbleu = true;
     }
@@ -112,8 +112,8 @@ bool estvert(int rouge,int vert,int bleu)
   bool estrose(int rouge,int vert,int bleu)
 {
     bool estrose = false;
-    if (rouge >= 256 && rouge <= 278 && vert  >= 203 && vert  <= 220
-        && bleu  >= 168 && bleu  <= 183)
+    if (rouge >= 234 && rouge <= 248 && vert  >= 194 && vert  <= 207
+        && bleu  >= 157 && bleu  <= 169)
     {
         estrose = true;
     }
@@ -124,8 +124,8 @@ bool estvert(int rouge,int vert,int bleu)
   bool estorange(int rouge,int vert,int bleu)
 {
     bool estorange = false;
-    if (rouge >= 220 && rouge <= 250 && vert  >= 195 && vert  <= 220
-        && bleu  >= 125 && bleu  <= 141)
+    if (rouge >= 201 && rouge <= 211 && vert  >= 186 && vert  <= 196
+        && bleu  >= 122 && bleu  <= 131)
     {
         estorange = true;
     }
