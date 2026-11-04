@@ -123,6 +123,17 @@ void eteindreLed()
   }
 }
 
+void beep(int nb)
+{
+  for(int i = 0; i< nb; i++)
+  {
+    AX_BuzzerON();
+    delay(100);
+    AX_BuzzerOFF();
+    delay(25);
+  }
+}
+
 void loop()
 {
   int rouge;
@@ -138,28 +149,12 @@ void loop()
     if(receptionIR() == START_IR)
     {
       etat = 1;
-      AX_BuzzerON();
-      delay(100);
-      AX_BuzzerOFF();
-      delay(25);
-      AX_BuzzerON();
-      delay(100);
-      AX_BuzzerOFF();
+      beep(2);
       break;
     }
     else if(receptionIR() == CONTINUE_IR)
     {
-      AX_BuzzerON();
-      delay(100);
-      AX_BuzzerOFF();
-      delay(25);
-      AX_BuzzerON();
-      delay(100);
-      AX_BuzzerOFF();
-      delay(25);
-      AX_BuzzerON();
-      delay(100);
-      AX_BuzzerOFF();
+      beep(3);
     }
   }
   while(etat == 2)
@@ -167,28 +162,12 @@ void loop()
     if(receptionIR() == CONTINUE_IR)
     {
       etat = 1;
-      AX_BuzzerON();
-      delay(100);
-      AX_BuzzerOFF();
-      delay(25);
-      AX_BuzzerON();
-      delay(100);
-      AX_BuzzerOFF();
-      delay(25);
-      AX_BuzzerON();
-      delay(100);
-      AX_BuzzerOFF();
+      beep(3);
       break;
     }
     else if(receptionIR() == START_IR)
     {
-      AX_BuzzerON();
-      delay(100);
-      AX_BuzzerOFF();
-      delay(25);
-      AX_BuzzerON();
-      delay(100);
-      AX_BuzzerOFF();
+      beep(2);
     }
   }
   while(etat == 1)
