@@ -2,7 +2,7 @@
 #include "main.h"
 #include "pid.h"
 
-#define SEUIL_CAPTEUR 450
+#define SEUIL_CAPTEUR 400
 #define VITESSE_PID 0.2
 #define MILIEU 0
 #define GAUCHE 1
@@ -10,7 +10,7 @@
 #define MIN_DELTA_T_DETECTION 75
 #define CORRECTION_POSITIVE 0.02
 #define CORRECTION_NEGATIVE -0.02
-#define TEMPS_CONFIRMATION 50
+#define TEMPS_CONFIRMATION 40
 
 #define DEBUG_CAPTEURS false
 
@@ -233,7 +233,7 @@ void tournerGauche()
 {
     etatPrecedent = 1;
     //nbAugmentation++;
-    vitesseSuiveurDroit += correctionTournant;
+    vitesseSuiveurDroit += correctionTournant*1.5;
     vitesseSuiveurGauche -= correctionTournant*2.5;
     if(vitesseSuiveurDroit > 1.0f) vitesseSuiveurDroit = 1.0f;
     if(vitesseSuiveurGauche < 0.0f) vitesseSuiveurGauche = 0.0f;
@@ -289,7 +289,6 @@ void suivreLaLigne()
 */
 
     //return ;
-    Serial.print("A");
     clampVitesse();
     if((capteurs[MILIEU] && !capteurs[GAUCHE] && !capteurs[DROITE]) || (etatPrecedent == 0 && !capteurs[GAUCHE]&& !capteurs[DROITE]&& !capteurs[MILIEU]))
     {

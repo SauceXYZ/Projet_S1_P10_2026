@@ -14,13 +14,13 @@ int vertpin = 48;
 int rougepin = 49;
 int pinsifflet = 47;
 
-#define TEMPS_DETECTION_COULEUR 500
+#define TEMPS_DETECTION_COULEUR 200
 
-#define ACTIVE_EPREUVE_MURE false
-#define ACTIVE_EPREUVE_TROUE false
-#define ACTIVE_EPREUVE_STOP false
-#define ACTIVE_EPREUVE_QUILLE false
-#define ACTIVE_EPREUVE_VERRE false
+#define ACTIVE_EPREUVE_MURE true
+#define ACTIVE_EPREUVE_TROUE true
+#define ACTIVE_EPREUVE_STOP true
+#define ACTIVE_EPREUVE_QUILLE true
+#define ACTIVE_EPREUVE_VERRE true
 #define ACTIVE_SUIVREUR true
 
 

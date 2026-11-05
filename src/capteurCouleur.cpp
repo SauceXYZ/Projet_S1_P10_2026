@@ -50,6 +50,10 @@ void detecterCouleur(bool &jaune, bool &vertclair, bool &bleufonce, bool &rose, 
     for (int i = 0; i < 2; i++)
     {
         lireRGB(rouge, vert, bleu, luminosite);
+        Serial.println("Lecture ");
+        Serial.println(rouge);
+        Serial.println(vert);
+        Serial.println(bleu);
 
         if (estjaune(rouge, vert, bleu))
         {
