@@ -22,6 +22,7 @@ int nbAugmentation = 0;
 unsigned long tempsSuiveur[] = {0,0,0};
 bool capteurs[3] = {false,false,false};
 bool passerTrou = false;
+bool litVert = false;
 
 
 void waitInput()
@@ -316,7 +317,7 @@ void suivreLaLigne()
     else if(!capteurs[MILIEU] && !capteurs[GAUCHE] && !capteurs[DROITE]){
         arreter();
     }
-    else if(capteurs[MILIEU] && capteurs[GAUCHE] && capteurs[DROITE]){
+    else if(capteurs[MILIEU] && capteurs[GAUCHE] && capteurs[DROITE] && litVert){
         placerPourPIB();
 
         bool atteindfin = false;
@@ -357,8 +358,10 @@ void testSuiveur()
 
 void trou()
 {
+    litVert = true;
     while(!passerTrou)
     {
         suivreLaLigne();
     }
+    litVert = false;
 }
