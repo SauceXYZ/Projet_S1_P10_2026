@@ -2,15 +2,17 @@
 #include "main.h"
 #include "pid.h"
 
-#define SEUIL_CAPTEUR 300
+#define SEUIL_CAPTEUR 450
 #define VITESSE_PID 0.2
 #define MILIEU 0
 #define GAUCHE 1
 #define DROITE 2
-#define MIN_DELTA_T_DETECTION 50
+#define MIN_DELTA_T_DETECTION 75
 #define CORRECTION_POSITIVE 0.02
 #define CORRECTION_NEGATIVE -0.02
-#define TEMPS_CONFIRMATION 75
+#define TEMPS_CONFIRMATION 50
+
+#define DEBUG_CAPTEURS false
 
 const float vitesse_initiale = 0.3f;
 float vitesseSuiveurGauche = 0.1f;
@@ -49,11 +51,13 @@ void verificationLigne()
         analogRead(pinSuiveurDroit)>SEUIL_CAPTEUR
     };
 
-    Serial.print("CApteurs");
-    Serial.println(analogRead(pinSuiveurMilieu));
-    Serial.println(analogRead(pinSuiveurGauche));
-    Serial.println(analogRead(pinSuiveurDroit));
-    //delay(500);
+    if(DEBUG_CAPTEURS)
+    {
+        Serial.print("CApteurs");
+        Serial.println(analogRead(pinSuiveurMilieu));
+        Serial.println(analogRead(pinSuiveurGauche));
+        Serial.println(analogRead(pinSuiveurDroit));
+    }
     static bool ancienResultat[3];
     /*Serial.print("temps:");
     Serial.println(tempsSuiveur[0]);
@@ -260,7 +264,11 @@ void tournerDroite()
 void suivreLaLigne()
 {
     verificationLigne();
-
+    if(DEBUG_CAPTEURS)
+    {
+        delay(500);
+        return;
+    }
     // Serial.print("Capteurs: ");
     // Serial.print(capteurs[MILIEU]);
     // Serial.print(" ");
