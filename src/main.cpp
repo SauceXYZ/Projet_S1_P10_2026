@@ -8,14 +8,20 @@
 #include "capteurCouleur.h"
 #include "receptionIR.h"
 #include "led.h"
-#include "robotVerre.h"
+#include "ramassageVerre.h"
+#include "servo.h"
 
 int vertpin = 48;
 int rougepin = 49;
 int pinsifflet = 47;
 
-#define TEMPS_DETECTION_COULEUR 200
+#define TEMPS_DETECTION_COULEUR 25
 
+#define ACTIVE_EPREUVE_MURE true
+#define ACTIVE_EPREUVE_TROUE true
+#define ACTIVE_EPREUVE_STOP true
+#define ACTIVE_EPREUVE_QUILLE true
+#define ACTIVE_EPREUVE_VERRE true
 #define ACTIVE_EPREUVE_MURE true
 #define ACTIVE_EPREUVE_TROUE true
 #define ACTIVE_EPREUVE_STOP true
@@ -76,7 +82,7 @@ void setup()
   ENCODER_Reset(0);
   ENCODER_Reset(1);
 
-  //initialiserServos();
+  initServo();
 
   MOTOR_SetSpeed(0, 0);
   MOTOR_SetSpeed(1, 0);
@@ -150,8 +156,16 @@ void loop()
   }
   while(etat == 1)
   {
+    eteindreLed();
+
     if (trouEnCours) {
       suivreLaLigne();
+      if (trouEchoue()) {
+        trouEnCours = false;
+        etat = 3;
+        Serial.println("Echec du trou: robot arrete, reinitialisation requise");
+        break;
+      }
       if (trouTermine()) { trouEnCours = false; trouEpreuve = true; }
       continue;
     }
@@ -161,15 +175,15 @@ void loop()
       oldTempsCouleur = millis();
       detecterCouleur(jaune, vertclair, bleufonce, rose, orange);
     }
-    // if(jaune || vertclair || bleufonce || rose || orange) Serial.print("Couleur detectee: ");
-    // if(jaune) {Serial.println("Jaune"); jaune = false;}
-    // else if(vertclair) {Serial.println("Vert"); vertclair = false;}
-    // else if(bleufonce) {Serial.println("Bleu"); bleufonce = false;}
-    // else if(rose) {Serial.println("Rose"); rose = false;}
-    // else if(orange) {Serial.println("Orange"); orange = false;}
-    //continue;
+    if(jaune || vertclair || bleufonce || rose || orange) Serial.print("Couleur detectee: ");
+    if(jaune) {Serial.println("Jaune");}
+    else if(vertclair) {Serial.println("Vert");}
+    else if(bleufonce) {Serial.println("Bleu");}
+    else if(rose) {Serial.println("Rose");}
+    else if(orange) {Serial.println("Orange");}
     if(jaune && !murEpreuve && ACTIVE_EPREUVE_MURE)
     {
+        Serial.println("Mur detecte");
         ledJauneDelai = millis();
         allumerLED(LED_JAUNE);
         //Mur
@@ -190,6 +204,8 @@ void loop()
     }
     else if(bleufonce && !stopEpreuve && ACTIVE_EPREUVE_STOP)
     {
+        Serial.println("Stop detecte");
+        arreterSuiveur();
         ledBleuDelai = millis();
         allumerLED(LED_BLEU);
         //attente
@@ -214,7 +230,7 @@ void loop()
         ledOrangeDelai = millis();
         allumerLED(LED_ORANGE);
         arreterSuiveur();
-        executerRamassageVerre();
+        EpreuveVerre();
         reinitialiserSuiveur();
 
         verreEpreuve = true;
@@ -222,12 +238,13 @@ void loop()
     }
     else if(verreEpreuve && murEpreuve && stopEpreuve && quilleEpreuve && trouEpreuve)
     {
-      arreterSuiveur();
-      pid_arret();
-      //déposer le verre
+        arreterSuiveur();
+        pid_arret();
+        dropServo();
+        Serial.println("Toutes les epreuves sont completes");
 
-      etat = 3;
-      break;
+        etat = 3;
+        break;
     }
     else
     {
@@ -239,5 +256,4 @@ void loop()
     }
 
   }
-  Serial.println("Debut du suivi de ligne");
 } 

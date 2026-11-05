@@ -1,11 +1,12 @@
 #include "led.h"
 #include <LibRobus.h>
 
-int ledBleuDelai = 0;
-int ledJauneDelai = 0;
-int ledVertDelai = 0;
-int ledRoseDelai = 0;
-int ledOrangeDelai = 0;
+// Match millis(): AVR int overflows after 32.767 s.
+unsigned long ledBleuDelai = 0;
+unsigned long ledJauneDelai = 0;
+unsigned long ledVertDelai = 0;
+unsigned long ledRoseDelai = 0;
+unsigned long ledOrangeDelai = 0;
 
 void eteindreLed()
 {

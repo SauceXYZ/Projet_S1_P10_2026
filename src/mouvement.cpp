@@ -40,6 +40,13 @@ void tourne(int directionDemande);
 
 bool avanceImpulsions(int32_t distance, bool versCentre, bool finDeCase)
 {
+    return avanceImpulsions(distance, versCentre, finDeCase, VITESSE_REFERENCE);
+}
+
+bool avanceImpulsions(int32_t distance, bool versCentre, bool finDeCase, float vitesseMax)
+{
+    if (vitesseMax < 0.05f) vitesseMax = 0.05f;
+    if (vitesseMax > VITESSE_REFERENCE) vitesseMax = VITESSE_REFERENCE;
     const int32_t debut = ENCODER_Read(1);
     if (AVANCE_V3_DEBUG)
     {
@@ -71,13 +78,14 @@ bool avanceImpulsions(int32_t distance, bool versCentre, bool finDeCase)
             freinageAnticipe = true;
             break;
         }
-        float vitesseCible = VITESSE_REFERENCE;
+        float vitesseCible = vitesseMax;
         if (restant_cm < 15.0f)
         {
             vitesseCible *= restant_cm / 15.0f;
             if (vitesseCible < 0.15f) vitesseCible = 0.15f;
         }
         if (obstacleFinCase) vitesseCible = 0.15f;
+        if (vitesseCible > vitesseMax) vitesseCible = vitesseMax;
         pid_avance(vitesseCible);
         delay(1);
     }

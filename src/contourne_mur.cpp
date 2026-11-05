@@ -38,10 +38,10 @@ bool contourneMur(void)
         }
         if (murDevant()) return false;  // trop de tentatives
 
-        avanceImpulsions(cmEnImpulsions(70), false, false);   // depasse le mur (a calibrer)
+        avanceImpulsions(cmEnImpulsions(50), false, false);   // depasse le mur (a calibrer)
         tourne(TOURNE_GAUCHE);                                // vers la ligne
         delay(100);
-        avanceImpulsions(decalageImpulsions, false, false);   // retour du decalage total
+        avanceImpulsions(decalageImpulsions + 10, false, false);   // retour du decalage total
         tourne(TOURNE_DROITE);                                // reprend la direction initiale
         return true;
     }
