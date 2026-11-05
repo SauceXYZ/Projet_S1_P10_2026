@@ -47,7 +47,7 @@ void setup()
 {
   BoardInit();
   pid_init();
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   pinMode(LED_JAUNE, OUTPUT);
   pinMode(LED_VERT, OUTPUT);
