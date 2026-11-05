@@ -9,5 +9,7 @@ void testSuiveur(void);
 // Starts the hole sequence; progression happens in suivreLaLigne().
 void trou(void);
 bool trouTermine(void);
+// Latched failure; the main loop must stop the challenge instead of retrying.
+bool trouEchoue(void);
 
 #endif
