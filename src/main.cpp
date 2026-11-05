@@ -3,7 +3,7 @@
 #include "pid.h"
 #include "mouvement.h"
 #include "contourne_mur.h"
-#include "suiveur.h"
+#include "suiveurPID.h"
 #include "quille.h"
 #include "capteurCouleur.h"
 #include "receptionIR.h"
@@ -42,12 +42,19 @@ bool murEpreuve = false;
 bool stopEpreuve = false;
 bool quilleEpreuve = false;
 bool trouEpreuve = false;
+bool trouEnCours = false;
+bool couleurInitialisee = false;
 
 void setup()
 {
   BoardInit();
   pid_init();
   Serial.begin(9600);
+  if (ACTIVE_EPREUVE_MURE || ACTIVE_EPREUVE_TROUE || ACTIVE_EPREUVE_STOP ||
+      ACTIVE_EPREUVE_QUILLE || ACTIVE_EPREUVE_VERRE) {
+    couleurInitialisee = initialiser();
+  }
+  reinitialiserSuiveur();
 
   pinMode(LED_JAUNE, OUTPUT);
   pinMode(LED_VERT, OUTPUT);
@@ -78,6 +85,7 @@ void setup()
 
 void allumerLED(int brocheLED)
 {
+  arreterSuiveur();
   pid_arret();
     digitalWrite(brocheLED, LOW);
     // delay(10000);
@@ -116,6 +124,7 @@ void loop()
   {
     if(receptionIR() == START_IR)
     {
+      reinitialiserSuiveur();
       etat = 1;
       beep(2);
       break;
@@ -129,6 +138,7 @@ void loop()
   {
     if(receptionIR() == CONTINUE_IR)
     {
+      reinitialiserSuiveur();
       etat = 1;
       beep(3);
       break;
@@ -140,8 +150,13 @@ void loop()
   }
   while(etat == 1)
   {
-    //lireRGB(rouge, vert, bleu, luminosite);
-    if(millis() - oldTempsCouleur > TEMPS_DETECTION_COULEUR)
+    if (trouEnCours) {
+      suivreLaLigne();
+      if (trouTermine()) { trouEnCours = false; trouEpreuve = true; }
+      continue;
+    }
+    // Read completed color integrations without waiting inside the driver.
+    if(couleurInitialisee && millis() - oldTempsCouleur > TEMPS_DETECTION_COULEUR)
     {
       oldTempsCouleur = millis();
       detecterCouleur(jaune, vertclair, bleufonce, rose, orange);
@@ -158,7 +173,9 @@ void loop()
         ledJauneDelai = millis();
         allumerLED(LED_JAUNE);
         //Mur
+        arreterSuiveur();
         contourneMur();
+        reinitialiserSuiveur();
         murEpreuve = true;
       
     }
@@ -168,7 +185,7 @@ void loop()
         allumerLED(LED_VERT);
         //Trou
         trou();
-        trouEpreuve = true;
+        trouEnCours = true;
       
     }
     else if(bleufonce && !stopEpreuve && ACTIVE_EPREUVE_STOP)
@@ -186,7 +203,9 @@ void loop()
         ledRoseDelai = millis();
         allumerLED(LED_ROSE);
         //quille
+        arreterSuiveur();
         EpreuveQuille();
+        reinitialiserSuiveur();
         quilleEpreuve = true;
       
     }
@@ -194,13 +213,16 @@ void loop()
     {
         ledOrangeDelai = millis();
         allumerLED(LED_ORANGE);
+        arreterSuiveur();
         executerRamassageVerre();
+        reinitialiserSuiveur();
 
         verreEpreuve = true;
       
     }
     else if(verreEpreuve && murEpreuve && stopEpreuve && quilleEpreuve && trouEpreuve)
     {
+      arreterSuiveur();
       pid_arret();
       //déposer le verre
 
@@ -212,6 +234,7 @@ void loop()
         if(ACTIVE_SUIVREUR)
         {
             suivreLaLigne();
+            testSuiveur();
         }
     }
 

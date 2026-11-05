@@ -33,62 +33,25 @@ void lireRGB(int &rouge,int &vert,int &bleu, int &luminosite)
 
 void detecterCouleur(bool &jaune, bool &vertclair, bool &bleufonce, bool &rose, bool &orange)
 {
-    int rouge, vert, bleu, luminosite;
-
-    int compteurjaune = 0;
-    int compteurvertclair = 0;
-    int compteurbleufonce = 0;
-    int compteurrose = 0;
-    int compteurorange = 0;
-
-    jaune = false;
-    vertclair = false;
-    bleufonce = false;
-    rose = false;
-    orange = false;
-
-    for (int i = 0; i < 2; i++)
-    {
-        lireRGB(rouge, vert, bleu, luminosite);
-
-        if (estjaune(rouge, vert, bleu))
-        {
-            compteurjaune++;
-        }
-        else if (estvert(rouge, vert, bleu))
-        {
-            compteurvertclair++;
-        }
-        else if (estbleu(rouge, vert, bleu))
-        {
-            compteurbleufonce++;
-        }
-        else if (estrose(rouge, vert, bleu))
-        {
-            compteurrose++;
-        }
-        else if (estorange(rouge, vert, bleu))
-        {
-            compteurorange++;
-        }
-        else
-        {
-            //aucune couleur détectée
-            break;
-        }
-    }
-
-    jaune = (compteurjaune == 2);
-    vertclair = (compteurvertclair == 2);
-    bleufonce = (compteurbleufonce == 2);
-    rose = (compteurrose == 2);
-    orange = (compteurorange == 2);
-
-    // if(jaune) Serial.println("Jaune");
-    // else if(vertclair) Serial.println("Vert");
-    // else if(bleufonce) Serial.println("Bleu");
-    // else if(rose) Serial.println("Rose");
-    // else if(orange) Serial.println("Orange");
+    // Called after initialiser(), at intervals longer than the 101 ms integration.
+    // Read the completed sample directly: getRawData() adds a blocking delay.
+    const int rouge = capteur.read16(TCS34725_RDATAL);
+    const int vert = capteur.read16(TCS34725_GDATAL);
+    const int bleu = capteur.read16(TCS34725_BDATAL);
+    static int precedente = 0;
+    int couleur = 0;
+    if (estjaune(rouge, vert, bleu)) couleur = 1;
+    else if (estvert(rouge, vert, bleu)) couleur = 2;
+    else if (estbleu(rouge, vert, bleu)) couleur = 3;
+    else if (estrose(rouge, vert, bleu)) couleur = 4;
+    else if (estorange(rouge, vert, bleu)) couleur = 5;
+    // Confirmation uses two separate scheduled samples.
+    jaune = couleur == 1 && precedente == couleur;
+    vertclair = couleur == 2 && precedente == couleur;
+    bleufonce = couleur == 3 && precedente == couleur;
+    rose = couleur == 4 && precedente == couleur;
+    orange = couleur == 5 && precedente == couleur;
+    precedente = couleur;
 }
 
 bool estjaune(int rouge,int vert,int bleu)
