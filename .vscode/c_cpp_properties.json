@@ -8,15 +8,15 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "C:/Users/justi/Documents/Projet_S1_P10_2026/include",
-                "C:/Users/justi/Documents/Projet_S1_P10_2026/src",
-                "C:/Users/justi/Documents/Projet_S1_P10_2026/lib/LibRobUS-master/src",
+                "C:/Users/justi/OneDrive/Documents/Projet_S1_P10_2026/include",
+                "C:/Users/justi/OneDrive/Documents/Projet_S1_P10_2026/src",
+                "C:/Users/justi/OneDrive/Documents/Projet_S1_P10_2026/lib/LibRobUS-master/src",
                 "C:/Users/justi/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                 "C:/Users/justi/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                "C:/Users/justi/Documents/Projet_S1_P10_2026/lib/Grove_I2C_Color_Sensor_TCS3472-master",
                 "C:/Users/justi/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                 "C:/Users/justi/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "C:/Users/justi/.platformio/packages/framework-arduino-avr/variants/mega",
+                "C:/Users/justi/OneDrive/Documents/Projet_S1_P10_2026/lib/Grove_I2C_Color_Sensor_TCS3472-master",
                 "C:/Users/justi/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
                 "C:/Users/justi/.platformio/packages/framework-arduino-avr/libraries/HID/src",
                 ""
@@ -24,15 +24,15 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "C:/Users/justi/Documents/Projet_S1_P10_2026/include",
-                    "C:/Users/justi/Documents/Projet_S1_P10_2026/src",
-                    "C:/Users/justi/Documents/Projet_S1_P10_2026/lib/LibRobUS-master/src",
+                    "C:/Users/justi/OneDrive/Documents/Projet_S1_P10_2026/include",
+                    "C:/Users/justi/OneDrive/Documents/Projet_S1_P10_2026/src",
+                    "C:/Users/justi/OneDrive/Documents/Projet_S1_P10_2026/lib/LibRobUS-master/src",
                     "C:/Users/justi/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                     "C:/Users/justi/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                    "C:/Users/justi/Documents/Projet_S1_P10_2026/lib/Grove_I2C_Color_Sensor_TCS3472-master",
                     "C:/Users/justi/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                     "C:/Users/justi/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "C:/Users/justi/.platformio/packages/framework-arduino-avr/variants/mega",
+                    "C:/Users/justi/OneDrive/Documents/Projet_S1_P10_2026/lib/Grove_I2C_Color_Sensor_TCS3472-master",
                     "C:/Users/justi/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
                     "C:/Users/justi/.platformio/packages/framework-arduino-avr/libraries/HID/src",
                     ""

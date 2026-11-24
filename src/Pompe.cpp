@@ -1,9 +1,6 @@
 #include "Pompe.h"
 
-void init_pompe()
-{
-    pinMode(PIN_POMPE, LOW);
-}
+
 
 void actionner_pompe()
 {

@@ -4,13 +4,14 @@
 void setup()
 {
   BoardInit();
+  Serial.begin(115200);
   ENCODER_Reset(0);
   ENCODER_Reset(1);
 
   MOTOR_SetSpeed(0, 0);
   MOTOR_SetSpeed(1, 0);
 
-  init_pompe(); 
+  pinMode(PIN_POMPE, OUTPUT);
 
   Serial.println("Initialisation complete");
 
@@ -18,8 +19,8 @@ void setup()
 
 void loop()
 {
-    if (ROBUS_IsBumper(FRONT)) 
+    if (ROBUS_IsBumper(LEFT)) 
     {
-        actionner_pompe();
-    }
+       actionner_pompe();
+     }
 } 
