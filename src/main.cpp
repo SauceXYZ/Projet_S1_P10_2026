@@ -11,7 +11,8 @@ void setup()
   MOTOR_SetSpeed(0, 0);
   MOTOR_SetSpeed(1, 0);
 
-  pinMode(PIN_POMPE, OUTPUT);
+  pinMode(PIN_POMPE_GAUCHE, OUTPUT);
+  pinMode(PIN_POMPE_DROITE, OUTPUT);
 
   Serial.println("Initialisation complete");
 
@@ -21,6 +22,11 @@ void loop()
 {
     if (ROBUS_IsBumper(LEFT)) 
     {
-       actionner_pompe();
+       actionner_pompe_Gauche();
      }
-} 
+ 
+    if (ROBUS_IsBumper(RIGHT)) 
+    {
+       actionner_pompe_Droite();
+     }
+  }
