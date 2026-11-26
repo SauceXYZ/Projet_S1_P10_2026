@@ -13,6 +13,7 @@ Inclure les librairies de functions que vous voulez utiliser
 #include "robusSerial.h"
 #include "../config.h"
 #include "cupDetection.h"
+#include "Pompe.h"
 
 /*
 Variables globales et defines
@@ -31,7 +32,7 @@ void setup(){
   BoardInit();
   Serial.begin(BAUD);
   serialInit3_3V(BAUD);
-  //initialisation
+  init_pompe();
   delay(100);
   Serial.println("Initialisation complete");
 }
@@ -53,6 +54,18 @@ void loop()
     Serial.println("STOP");
     stopCup();
   }
+
+  if (ROBUS_IsBumper(LEFT)) 
+    {
+      stopCup();
+       actionner_pompe_Gauche();
+     }
+ 
+    if (ROBUS_IsBumper(RIGHT)) 
+    {
+      stopCup();
+       actionner_pompe_Droite();
+     }
 
   
 }
