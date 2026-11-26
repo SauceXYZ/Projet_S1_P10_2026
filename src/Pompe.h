@@ -3,8 +3,9 @@
 
 #include <Arduino.h>
 
-#define PIN_POMPE_DROITE 48
-#define PIN_POMPE_GAUCHE 46
+#define PIN_POMPE_DROITE 49
+#define PIN_POMPE_GAUCHE 47
+
 
 void init_pompe();
 void actionner_pompe_Gauche();
